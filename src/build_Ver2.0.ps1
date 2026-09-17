@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $sourceRoot = $PSScriptRoot
 $source = Join-Path $sourceRoot 'InsurancePayrollValidator_Ver2.0.cs'
 $epplus = Join-Path $sourceRoot 'dependencies\EPPlus.dll'
@@ -8,7 +8,7 @@ $validation = Join-Path $sourceRoot 'templates\validation_template_distribution.
 $icon = Join-Path $sourceRoot 'assets\ui_reference_app_icon.ico'
 $referenceIcon = Join-Path $sourceRoot 'assets\ui_reference_icon_transparent.png'
 $buildFolder = Join-Path $sourceRoot 'build'
-$outputName = '사회보험_재원별_대사_보조_도우미_Ver2.0.2.exe'
+$outputName = 'SocialInsurance_Reconciliation_Helper_Ver2.0.3.exe'
 $output = Join-Path $buildFolder $outputName
 $compiler = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 

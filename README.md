@@ -1,32 +1,14 @@
-# 사회보험 재원별 대사 보조 도우미
+# 사회보험 재원별 대사 보조 도우미 2.0.3 백업
 
-Windows용 급여대장·사회보험 부과자료 대사 및 제출서 생성 프로그램입니다.
+2026-09-17 사용자 확인을 마친 0917d 수정본을 2.0.3으로 버전 전환한 백업입니다. 보험 정산·국민연금 양식·수기 재원 반영·직종 수정·파일 선택 아이콘 개선이 포함됩니다.
 
-## 최신 정식 버전: 2.0.2
+- [2.0.3 실행파일 및 전체 소스](https://github.com/isilria/Social-insurance-updates/releases/tag/v2.0.3)
+- [변경 사항 및 사용 안내](RELEASE_2.0.3.md)
+- [회귀 검증 결과: 177개 통과](TEST_RESULTS.txt)
+- [파일 무결성 값](SHA256SUMS.txt)
 
-- [실행파일 다운로드](https://github.com/isilria/Social-insurance-updates/releases/download/v2.0.2/SocialInsurance_Reconciliation_Helper_Ver2.0.2.exe)
-- [2.0.2 배포 및 변경 내역](https://github.com/isilria/Social-insurance-updates/releases/tag/v2.0.2)
-- [전체 소스·서식·라이브러리·빌드자료](https://github.com/isilria/Social-insurance-updates/releases/download/v2.0.2/SocialInsurance_Ver2.0.2_Source.zip)
+backup/v2.0.3 브랜치와 v2.0.3 태그에 보관합니다. 자동 업데이트의 main/latest.ini와 기존 2.0.2 배포본은 변경하지 않았습니다.
 
-이번 배포에서는 PDF를 약 600dpi 무손실 압축으로 개선했습니다. 기존 A4 배치와 보정·확인·제출서 생성 기능을 유지합니다. 이전 PDF는 새 버전에서 다시 생성해야 개선된 품질이 적용됩니다.
+GitHub 자동 생성 소스 ZIP에는 내장 서식·라이브러리가 포함되지 않습니다. 직접 빌드하려면 릴리스의 SocialInsurance_Ver2.0.3_Source.zip을 받아 src/build_Ver2.0.ps1을 실행하세요. test.ps1은 실제 Excel을 사용해 회귀 검증을 수행합니다. 선택적인 실자료 검증은 별도 입력 파일 경로를 지정해야 합니다.
 
-## 소스 관리
-
-`src/`에는 현재 배포본의 C# 소스와 빌드 스크립트를 보관합니다.
-직접 빌드할 때는 위의 **전체 소스 압축파일**을 받으세요. GitHub가 자동으로 제공하는 Source code.zip에는 내장 서식과 라이브러리가 포함되지 않습니다.
-
-- `InsurancePayrollValidator_Ver2.0.cs`: 기본 화면·입력·대사·출력
-- `TestFeatures202.cs`: 2.0.2 화면 및 제출서 연결
-- `ManualContributions202.cs`: 수기 보정·확인 처리
-- `PrintQuality202.cs`: 고화질 PDF 이미지 생성
-- `build_Ver2.0.ps1`: 실행파일 빌드
-- `RELEASE_2.0.2.md`: 변경 내역과 검증 항목
-
-Windows 10/11, .NET Framework 4.8 환경을 사용합니다. 제출서 생성에는 Microsoft Excel이 필요합니다.
-실제 급여자료·보험 원본·개인 설정·인증정보는 배포 파일에 포함하지 않습니다.
-
-## 자동 업데이트
-
-`latest.ini`가 프로그램의 공개 업데이트 기준입니다. 새 릴리스의 실행파일을 게시하고 SHA256을 확인한 뒤 갱신합니다. 이전 릴리스는 Releases에서 확인할 수 있습니다.
-
-Ver. 2.0.2 @ 살구아빠
+Windows 및 .NET Framework 4.8이 필요하며, 제출서 생성에는 Microsoft Excel이 필요합니다. 실제 급여·보험 원본, 개인별 생성 결과, 사용자 설정과 인증정보는 포함하지 않습니다.

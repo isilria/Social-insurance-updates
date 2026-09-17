@@ -1,0 +1,15 @@
+PASS payroll insurance-name matching: leave/return/year-end/termination/other, signed values, order, totals and no double counting
+PASS actual attachment parser, matched and insurance-only health totals
+PASS health positive/negative/zero/net-zero/public/explicit asymmetric employer
+PASS pension total/current headers, positive/refund/net-zero, payroll settlement
+PASS parser -> model -> UI manual fund save/reload -> actual Excel worker output all four insurances
+PASS actual teacher output health -51480 (not -102960), pension 81000
+PASS worker wage-base formulas preserved; pension 2000000 * template rate -19000 = 76000, not notice total 81000
+PASS same name/birth across sites preserves separate employer totals
+PASS short-term worker also preserves wage-base formulas and settlement-only inputs
+PASS existing manual correction/save/reload/history and original-sheet preservation regression
+PASS old saved result cannot silently reuse doubled/missing settlement totals
+PASS job editor: blank/replacement/clear/trim, save/reopen/general save, cancel, amounts/fund/completed-state preservation, audit, originals, actual submission E7
+PASS supplied pension layout 24 rows: E current wage -> submission K; formulas preserved
+PASS nonzero retro wage, zero current wage, current-only totals and separate retro settlement
+PASS assertions=177

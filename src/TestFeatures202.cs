@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
@@ -59,9 +59,9 @@ namespace InsurancePayrollValidator
 
         void Initialize202()
         {
-            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.2";sidebarVersionLabel.Text="Ver 2.0.2";
+            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.3";sidebarVersionLabel.Text="Ver. 2.0.3";
             foreach(Control c in Descendants202(pages["설정"])){
-                Label l=c as Label;if(l!=null&&l.Text.Contains("현재 버전"))l.Text="현재 버전  Ver. 2.0.2";
+                Label l=c as Label;if(l!=null&&l.Text.Contains("현재 버전"))l.Text="현재 버전  Ver. 2.0.3";
                 // Official release keeps the user's existing update preference.
             }
             var button=OutputButton("인식 내역","search",854,9,180,34,UiBlue,false);button.Tag="ThemeAccentAction";button.Click+=(s,e)=>Safe202(ShowRecognition202);pages["파일 등록"].Controls.Add(button);
@@ -73,7 +73,7 @@ namespace InsurancePayrollValidator
         void BuildTools202(Control page)
         {
             page.Controls.Add(TitleLabel("작업 관리",8,10,20F));
-            page.Controls.Add(new Label{Text="Ver. 2.0.2 테스트 · 저장한 결과를 다시 열고, 인식 내역과 처리 이력을 확인합니다.",Location=new Point(10,52),AutoSize=true,ForeColor=UiMuted});
+            page.Controls.Add(new Label{Text="Ver. 2.0.3 · 저장한 결과를 다시 열고, 인식 내역과 처리 이력을 확인합니다.",Location=new Point(10,52),AutoSize=true,ForeColor=UiMuted});
             string[] labels={"인식 내역 / 미인식 파일","현재 작업 저장","저장한 작업 열기","최근 작업","확인완료 이력 / 되돌리기","재원 분류 규칙","지난 자료와 금액 비교"};
             string[] notes={"파일별 종류·사업장·인원, ZIP 내부 파일 및 오류 확인","보정·감면·확인 이력을 포함한 XLSM 저장","저장된 XLSM의 사본을 열어 이어서 작업","최근 저장·불러오기 목록에서 선택","확인 사유·처리일을 조회하고 미확인으로 복원","사업장별 성명·직종 규칙을 저장하고 적용 전 확인","다른 월의 저장 결과와 보험별 기관부담 증감 비교"};
             Action[] actions={ShowRecognition202,SaveWorkspace202,OpenWorkspace202,ShowRecent202,ShowAudit202,EditRules202,Compare202};

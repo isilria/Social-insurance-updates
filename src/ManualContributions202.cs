@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -38,9 +38,9 @@ namespace InsurancePayrollValidator
                 if(!row.HasSummaryBreakdown)throw new InvalidOperationException("보험별 상세 데이터가 없는 이전 결과입니다. 먼저 새로 대사해 주세요.");
                 string path=validationResult.Text,key=StablePersonKey(row),hash=Hash202(path);
                 if(reviewBubble!=null&&!reviewBubble.IsDisposed)reviewBubble.Close();
-                var popup=new ReviewEditBubble202(row,ReviewReasonText(row),IsReviewCompleted(row),values=>{
+                var popup=new ReviewEditBubble202(row,ReviewReasonText(row),IsReviewCompleted(row),null,(values,job)=>{
                     if(validationResult.Text!=path||Hash202(path)!=hash)throw new InvalidOperationException("결과 자료가 변경되었습니다. 창을 닫고 다시 열어 주세요.");
-                    SaveManual202(path,key,values);
+                    SaveManual202(path,key,values,job);
                 });
                 reviewBubble=popup;
                 {
@@ -50,27 +50,31 @@ namespace InsurancePayrollValidator
                 }
             });
         }
-        void SaveManual202(string path,string key,decimal[] values)
+        void SaveManual202(string path,string key,decimal[] values,string job=null)
         {
             if(values==null||values.Length!=8||values.Any(v=>v!=Decimal.Truncate(v)||Math.Abs(v)>1000000000000m))throw new ArgumentException("금액은 원 단위 정수로 입력해 주세요.");
             var matches=individualDashboard.Rows.Where(x=>StablePersonKey(x)==key).ToList();
             if(matches.Count!=1)throw new InvalidOperationException("동일 사업장의 성명·생년월일이 중복되어 자동 보정할 수 없습니다.");
             var row=matches[0];decimal[] before=ManualValues202(row);
-            if(before.SequenceEqual(values))return;
+            string beforeJob=row.Job??"",nextJob=job==null?beforeJob:job.Trim();
+            if(nextJob.Length>100||nextJob.Contains("\r")||nextJob.Contains("\n"))throw new ArgumentException("직종명은 100자 이내의 한 줄로 입력해 주세요.");
+            bool amountsChanged=!before.SequenceEqual(values),jobChanged=beforeJob!=nextJob;
+            if(!amountsChanged&&!jobChanged)return;
             string temp=path+"."+Guid.NewGuid().ToString("N")+".xlsm";
             try {
                 File.Copy(path,temp);
                 row.HealthPayroll=values[0]+values[1];row.SummaryLongTermDifference=row.SummaryLongTermPersonal-values[1];
                 row.PensionPayroll=values[2];row.EmploymentPayroll=values[3];
                 row.SummaryHealthEmployer=values[4];row.SummaryLongTermEmployer=values[5];row.SummaryPensionEmployer=values[6];row.SummaryEmploymentEmployer=values[7];
-                reviewCheckedKeys.Remove(key);retainedReviewKeys202.Add(key);row.ReviewReason="부담금 수기 보정";
+                row.Job=nextJob;
+                if(amountsChanged){reviewCheckedKeys.Remove(key);retainedReviewKeys202.Add(key);row.ReviewReason="부담금 수기 보정";}
                 NormalizeIndividualStatuses();RebuildSummaryDashboardFromIndividuals();
                 PersistReviewStateBase(temp);
                 using(var p=new ExcelPackage(new FileInfo(temp))) {
                     var ws=p.Workbook.Worksheets["UI개인별데이터"];
                     int[] rows=Enumerable.Range(2,ws.Dimension.End.Row-1).Where(r=>String.Join("|",new[]{ws.Cells[r,1].Text,ws.Cells[r,3].Text,System.Text.RegularExpressions.Regex.Replace(ws.Cells[r,4].Text,"[^0-9]","")})==key).ToArray();
                     if(rows.Length!=1)throw new InvalidOperationException("저장 대상의 고유 정보를 확인할 수 없습니다.");
-                    int n=rows[0];int[] cols={8,11,14,23,25,27,29,32,33};
+                    int n=rows[0];ws.Cells[n,5].Value=row.Job;int[] cols={8,11,14,23,25,27,29,32,33};
                     decimal[] saved={row.HealthPayroll,row.PensionPayroll,row.EmploymentPayroll,values[4],values[5],values[6],values[7],row.SummaryHealthDifference,row.SummaryLongTermDifference};
                     for(int c=0;c<cols.Length;c++)ws.Cells[n,cols[c]].Value=saved[c];
                     var log=p.Workbook.Worksheets["수기보정이력"]??p.Workbook.Worksheets.Add("수기보정이력");
@@ -80,6 +84,10 @@ namespace InsurancePayrollValidator
                     int nr=log.Dimension.End.Row+1;
                     for(int c=0;c<8;c++)if(before[c]!=values[c]){
                         object[] data={DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),row.Site,row.Name,names[c],before[c],values[c],key};
+                        for(int j=0;j<data.Length;j++)log.Cells[nr,j+1].Value=data[j];nr++;
+                    }
+                    if(jobChanged){
+                        object[] data={DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),row.Site,row.Name,"직종명",beforeJob,nextJob,key};
                         for(int j=0;j<data.Length;j++)log.Cells[nr,j+1].Value=data[j];nr++;
                     }
                     log.Column(7).Hidden=true;log.Column(1).Width=23;log.Column(2).Width=22;log.Column(3).Width=16;log.Column(4).Width=23;log.Column(5).Width=18;log.Column(6).Width=18;
@@ -150,10 +158,10 @@ namespace InsurancePayrollValidator
     }
     sealed class ReviewEditBubble202:ReviewDetailBubble
     {
-        public ReviewEditBubble202(IndividualRowData row,string reason,bool done,Action<decimal[]> save):base(row,row.Fund,reason,done)
+        public ReviewEditBubble202(IndividualRowData row,string reason,bool done,Action<decimal[]> save,Action<decimal[],string> saveDetails=null):base(row,row.Fund,reason,done)
         {
-            Height=675;TopMost=false;StartPosition=FormStartPosition.Manual;
-            var panel=new Panel{Location=new Point(22,306),Size=new Size(306,354),BackColor=UiTheme.Card};
+            Height=711;TopMost=false;StartPosition=FormStartPosition.Manual;
+            var panel=new Panel{Location=new Point(22,306),Size=new Size(306,390),BackColor=UiTheme.Card};
             Controls.Add(panel);
             panel.Controls.Add(new Label{Text="급여대장 금액 보정",Location=new Point(8,0),Size=new Size(164,25),ForeColor=UiTheme.Accent,Font=new Font("맑은 고딕",8.3F,FontStyle.Bold)});
             var applyNotice=new NoticeApplyButton202{Name="ApplyNotice",Text="고지금액 적용",Location=new Point(176,-1),Size=new Size(124,28)};
@@ -184,15 +192,19 @@ namespace InsurancePayrollValidator
             applyNotice.Click+=(s,e)=>{for(int i=0;i<4;i++)inputs[i].Text=notices[i].ToString("#,##0");refresh();};
             refresh();panel.Controls.Add(grid);
             panel.Controls.Add(new Label{Text="기관부담금 합계  "+(initial.Skip(4).Sum()+row.SummaryIndustrialEmployer).ToString("#,##0")+"원\r\n산재 기관부담금  "+row.SummaryIndustrialEmployer.ToString("#,##0")+"원",Location=new Point(8,217),Size=new Size(292,39),ForeColor=UiTheme.Text});
-            panel.Controls.Add(new Label{Text="급여대장 칸을 수정한 후 저장·반영하세요.\r\n고지금액·기관부담금과 원본 자료는 유지됩니다.",Location=new Point(8,261),Size=new Size(292,40),ForeColor=UiTheme.Muted,Font=new Font("맑은 고딕",7.5F)});
+            panel.Controls.Add(new Label{Text="직종명·급여대장 칸을 수정한 후 저장하세요.\r\n고지금액·기관부담금과 원본 자료는 유지됩니다.",Location=new Point(8,261),Size=new Size(292,40),ForeColor=UiTheme.Muted,Font=new Font("맑은 고딕",7.5F)});
+            var jobInput=new TextBox{Name="JobNameInput",Text=row.Job??"",MaxLength=100,Location=new Point(68,1),Size=new Size(232,25),BackColor=UiTheme.Surface,ForeColor=UiTheme.Text};
             var ok=new Button{Name="SaveCorrection",Text="저장 · 반영",Location=new Point(104,309),Size=new Size(116,32),BackColor=UiTheme.Accent,ForeColor=Color.White,FlatStyle=FlatStyle.Flat};
             var cancel=new Button{Text="닫기",Location=new Point(228,309),Size=new Size(72,32),BackColor=UiTheme.Surface,ForeColor=UiTheme.Text,FlatStyle=FlatStyle.Flat};
             cancel.Click+=(s,e)=>Close();
             ok.Click+=(s,e)=>{
                 decimal[] next=(decimal[])initial.Clone();for(int i=0;i<4;i++)if(!ContributionEditor202.TryAmount(inputs[i].Text,out next[i])){MessageBox.Show(this,"급여대장 금액을 원 단위 정수로 입력해 주세요.");inputs[i].Focus();return;}
-                try{if(save!=null)save(next);Close();}catch(Exception ex){MessageBox.Show(this,"저장하지 못했습니다.\r\n"+ex.Message,"부담금 보정",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
+                try{if(saveDetails!=null)saveDetails(next,jobInput.Text);else if(save!=null)save(next);Close();}catch(Exception ex){MessageBox.Show(this,"저장하지 못했습니다.\r\n"+ex.Message,"부담금 보정",MessageBoxButtons.OK,MessageBoxIcon.Warning);}
             };
-            panel.Controls.Add(ok);panel.Controls.Add(cancel);AcceptButton=ok;CancelButton=cancel;
+            panel.Controls.Add(ok);panel.Controls.Add(cancel);
+            foreach(Control child in panel.Controls)child.Top+=36;
+            panel.Controls.Add(new Label{Text="직종명",Location=new Point(8,3),Size=new Size(58,23),ForeColor=UiTheme.Text});
+            panel.Controls.Add(jobInput);jobInput.TabIndex=0;AcceptButton=ok;CancelButton=cancel;
         }
     }
     sealed class NoticeApplyButton202:Button

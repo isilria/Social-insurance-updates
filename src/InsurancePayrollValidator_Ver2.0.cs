@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -22,8 +22,8 @@ using OfficeOpenXml.VBA;
 [assembly: AssemblyTitle("사회보험 재원별 대사 보조 도우미")]
 [assembly: AssemblyProduct("사회보험 재원별 대사 보조 도우미")]
 [assembly: AssemblyDescription("급여대장과 사회보험 부과자료의 재원별 대사 및 제출서 생성을 돕는 프로그램")]
-[assembly: AssemblyVersion("2.0.2.0")]
-[assembly: AssemblyFileVersion("2.0.2.0")]
+[assembly: AssemblyVersion("2.0.3.0")]
+[assembly: AssemblyFileVersion("2.0.3.0")]
 
 namespace InsurancePayrollValidator
 {
@@ -250,7 +250,7 @@ namespace InsurancePayrollValidator
         public MainForm()
         {
             Dictionary<string,string> startupSettings=AppSettings.Load();UiTheme.Set(GetSetting(startupSettings,"Theme"));
-            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.2"; Icon=LoadAppIcon(); ClientSize=new Size(1280,650); MinimumSize=new Size(1180,650); StartPosition=FormStartPosition.CenterScreen; Font=new Font("맑은 고딕",9F); BackColor=UiTheme.Page;DoubleBuffered=true;
+            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.3"; Icon=LoadAppIcon(); ClientSize=new Size(1280,650); MinimumSize=new Size(1180,650); StartPosition=FormStartPosition.CenterScreen; Font=new Font("맑은 고딕",9F); BackColor=UiTheme.Page;DoubleBuffered=true;
             sidebar=new Panel{Dock=DockStyle.Left,Width=205,BackColor=UiTheme.Sidebar,Padding=new Padding(12,15,12,12)};Controls.Add(sidebar);
             var brandImage=LoadReferenceIcon();var brandPanel=new Panel{Dock=DockStyle.Top,Height=90,BackColor=Color.Transparent};brandPanel.Controls.Add(new PictureBox{Image=brandImage==null?null:new Bitmap(brandImage,44,44),Location=new Point(4,8),Size=new Size(44,44),SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.Transparent});brandPanel.Controls.Add(new Label{Text="사회보험 대사\r\n보조 도우미",Location=new Point(55,8),Size=new Size(112,44),Font=new Font("맑은 고딕",9.5F,FontStyle.Bold),ForeColor=UiTheme.Accent,TextAlign=ContentAlignment.MiddleLeft,Tag="SidebarTitle"});sidebar.Controls.Add(brandPanel);
             navigationPanel=new BufferedFlowLayoutPanel{Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,AutoScroll=true,Padding=new Padding(0,8,0,52),BackColor=UiTheme.Sidebar};sidebar.Controls.Add(navigationPanel);navigationPanel.BringToFront();
@@ -266,7 +266,7 @@ namespace InsurancePayrollValidator
             AddPage("내부결재자료 생성",BuildPage(BuildApprovalScreen));
             AddPage("설정",BuildPage(BuildSettingsScreen));
             // 작업 관리 화면은 이번 수정에서 제거했습니다.
-            AddNav(navigationPanel,"파일 등록",false);AddNav(navigationPanel,"대사 결과",true);AddNav(navigationPanel,"총괄표",false);AddNav(navigationPanel,"개인별 내역",false);AddNav(navigationPanel,"반환 / 추징",false);AddNav(navigationPanel,"확인 필요",false);AddNav(navigationPanel,"감면 적용",false);AddNav(navigationPanel,"제출서 생성",false);AddNav(navigationPanel,"내부결재자료 생성",false);AddNav(navigationPanel,"설정",false);var sidebarFooter=new Panel{Width=165,Height=40,BackColor=Color.Transparent};sidebarVersionLabel=new Label{Text="Ver 2.0.2",Location=new Point(8,2),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarEmailLabel=new Label{Text="e-mail : isilria@ice.go.kr",Location=new Point(8,19),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarFooter.Controls.Add(sidebarVersionLabel);sidebarFooter.Controls.Add(sidebarEmailLabel);navigationPanel.Controls.Add(sidebarFooter);Action placeSidebarFooter=()=>{int used=navigationPanel.Controls.Cast<Control>().Where(x=>x!=sidebarFooter&&x.Visible).Sum(x=>x.Height+x.Margin.Vertical);int top=Math.Max(10,navigationPanel.ClientSize.Height-navigationPanel.Padding.Vertical-used-sidebarFooter.Height);if(sidebarFooter.Margin.Top!=top)sidebarFooter.Margin=new Padding(0,top,0,0);};navigationPanel.SizeChanged+=(s,e)=>placeSidebarFooter();navigationPanel.Layout+=(s,e)=>placeSidebarFooter();placeSidebarFooter();
+            AddNav(navigationPanel,"파일 등록",false);AddNav(navigationPanel,"대사 결과",true);AddNav(navigationPanel,"총괄표",false);AddNav(navigationPanel,"개인별 내역",false);AddNav(navigationPanel,"반환 / 추징",false);AddNav(navigationPanel,"확인 필요",false);AddNav(navigationPanel,"감면 적용",false);AddNav(navigationPanel,"제출서 생성",false);AddNav(navigationPanel,"내부결재자료 생성",false);AddNav(navigationPanel,"설정",false);var sidebarFooter=new Panel{Width=165,Height=40,BackColor=Color.Transparent};sidebarVersionLabel=new Label{Text="Ver 2.0.3",Location=new Point(8,2),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarEmailLabel=new Label{Text="e-mail : isilria@ice.go.kr",Location=new Point(8,19),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarFooter.Controls.Add(sidebarVersionLabel);sidebarFooter.Controls.Add(sidebarEmailLabel);navigationPanel.Controls.Add(sidebarFooter);Action placeSidebarFooter=()=>{int used=navigationPanel.Controls.Cast<Control>().Where(x=>x!=sidebarFooter&&x.Visible).Sum(x=>x.Height+x.Margin.Vertical);int top=Math.Max(10,navigationPanel.ClientSize.Height-navigationPanel.Padding.Vertical-used-sidebarFooter.Height);if(sidebarFooter.Margin.Top!=top)sidebarFooter.Margin=new Padding(0,top,0,0);};navigationPanel.SizeChanged+=(s,e)=>placeSidebarFooter();navigationPanel.Layout+=(s,e)=>placeSidebarFooter();placeSidebarFooter();
             LoadSavedSubmissionInfo();Initialize202();ApplyTheme(UiTheme.Name,false);FormClosing+=(s,e)=>{if(e.Cancel)return;SaveSubmissionInfo();CleanupTemporaryResult();};ShowPage("파일 등록");sidebar.BringToFront();
         }
         delegate void PageBuilder(Control page);
@@ -284,7 +284,7 @@ namespace InsurancePayrollValidator
         void BuildSettingsScreen(Control page)
         {
             page.Controls.Add(TitleLabel("설정",8,10,20F));
-            var update=(RoundedPanel)Card(8,61,1030,104,UiTheme.Card);update.Controls.Add(new Label{Text="업데이트 확인",Location=new Point(22,13),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});update.Controls.Add(new Label{Text="현재 버전  Ver. 2.0.2",Location=new Point(22,51),AutoSize=true,ForeColor=UiTheme.Accent,Font=new Font("맑은 고딕",9F,FontStyle.Bold),Tag="ThemeAccent"});updateStatusLabel=new Label{Text="최신 여부  확인 전",Location=new Point(225,51),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8.5F),Tag="ThemeMuted"};update.Controls.Add(updateStatusLabel);var check=OutputButton("업데이트 확인","refresh",555,36,155,38,UiTheme.Accent,false);check.Tag="ThemeAccentAction";check.Click+=(s,e)=>CheckForUpdates(true);update.Controls.Add(check);var auto=new CheckBox{Text="자동 확인",Checked=automaticUpdateCheck,Location=new Point(758,45),AutoSize=true,ForeColor=UiText,BackColor=Color.Transparent,Tag="ThemeText"};auto.CheckedChanged+=(s,e)=>{automaticUpdateCheck=auto.Checked;SaveSubmissionInfo();};update.Controls.Add(auto);page.Controls.Add(update);
+            var update=(RoundedPanel)Card(8,61,1030,104,UiTheme.Card);update.Controls.Add(new Label{Text="업데이트 확인",Location=new Point(22,13),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});update.Controls.Add(new Label{Text="현재 버전  Ver. 2.0.3",Location=new Point(22,51),AutoSize=true,ForeColor=UiTheme.Accent,Font=new Font("맑은 고딕",9F,FontStyle.Bold),Tag="ThemeAccent"});updateStatusLabel=new Label{Text="최신 여부  확인 전",Location=new Point(225,51),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8.5F),Tag="ThemeMuted"};update.Controls.Add(updateStatusLabel);var check=OutputButton("업데이트 확인","refresh",555,36,155,38,UiTheme.Accent,false);check.Tag="ThemeAccentAction";check.Click+=(s,e)=>CheckForUpdates(true);update.Controls.Add(check);var auto=new CheckBox{Text="자동 확인",Checked=automaticUpdateCheck,Location=new Point(758,45),AutoSize=true,ForeColor=UiText,BackColor=Color.Transparent,Tag="ThemeText"};auto.CheckedChanged+=(s,e)=>{automaticUpdateCheck=auto.Checked;SaveSubmissionInfo();};update.Controls.Add(auto);page.Controls.Add(update);
             var themeCard=(RoundedPanel)Card(8,179,1030,150,UiTheme.Card);themeCard.Controls.Add(new Label{Text="색상 테마 선택",Location=new Point(22,14),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});string[] names={"파랑","초록","빨강","살구","회색","검정"};Color[] accents={Color.FromArgb(48,63,220),Color.FromArgb(27,145,82),Color.FromArgb(205,62,62),Color.FromArgb(221,113,61),Color.FromArgb(91,103,121),Color.FromArgb(117,145,255)};themeChoiceButtons=new Button[6];for(int i=0;i<6;i++){string choice=names[i];var button=new ThemeChoiceButton{ThemeName=choice,Description="",Accent=accents[i],DarkPreview=choice=="검정",Location=new Point(18+i*168,52),Size=new Size(154,70),Active=UiTheme.Name==choice};button.Click+=(s,e)=>ApplyTheme(choice,true);themeChoiceButtons[i]=button;themeCard.Controls.Add(button);}page.Controls.Add(themeCard);
             var program=(RoundedPanel)Card(8,343,1030,92,UiTheme.Card);program.Controls.Add(new Label{Text="프로그램 설정",Location=new Point(22,14),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});var open=new CheckBox{Text="저장 후 결과 파일 자동 열기",Checked=openResultAfterSave,Location=new Point(24,53),AutoSize=true,ForeColor=UiText,BackColor=Color.Transparent,Tag="ThemeText"};open.CheckedChanged+=(s,e)=>{openResultAfterSave=open.Checked;SaveSubmissionInfo();};program.Controls.Add(open);page.Controls.Add(program);
         }
@@ -332,7 +332,7 @@ namespace InsurancePayrollValidator
         void BuildHomeScreen(Control page)
         {
             page.Controls.Add(TitleLabel("파일 등록",10,12,18F));
-            dropZone=Card(10,58,1025,180,Color.FromArgb(253,252,255));dropZone.AllowDrop=true;var roundedDrop=(RoundedPanel)dropZone;roundedDrop.BorderColor=Color.FromArgb(167,155,255);roundedDrop.BorderWidth=1;roundedDrop.BorderDashStyle=System.Drawing.Drawing2D.DashStyle.Dash;dropZone.Controls.Add(new PictureBox{Image=LoadReferenceIcon(.70F),Location=new Point(66,12),Size=new Size(184,150),SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.Transparent});dropZone.Controls.Add(new Label{Text="대사 파일을 여기로 드래그하세요",Location=new Point(350,34),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",13F,FontStyle.Bold)});dropZone.Controls.Add(new Label{Text="급여대장, 사회보험 개인별 부과내역 파일,\r\n1개월 미만 대체근로자 인건비 신청 서식",Location=new Point(350,64),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8.5F)});var select=ActionButton("▱  파일 선택",350,112,142,34,UiTheme.Accent);select.Click+=(s,e)=>ChooseMultipleFiles();dropZone.Controls.Add(select);var reset=ActionButton("초기화",500,112,78,34,Color.FromArgb(105,115,137));reset.Click+=(s,e)=>ResetWorkspace();dropZone.Controls.Add(reset);fileAnalysisStatus=new Label{Text="ⓘ  파일을 올려놓으면 자료 종류와 사업장관리번호를 자동 분석합니다.",Location=new Point(596,121),AutoSize=true,ForeColor=UiMuted,BackColor=Color.FromArgb(246,244,255),Padding=new Padding(8,3,8,3),Font=new Font("맑은 고딕",7.5F)};RoundControl(fileAnalysisStatus,8);dropZone.Controls.Add(fileAnalysisStatus);dropZone.DragEnter+=OnFilesDragEnter;dropZone.DragLeave+=OnFilesDragLeave;dropZone.DragDrop+=OnFilesDropped;foreach(Control child in dropZone.Controls){child.AllowDrop=true;child.DragEnter+=OnFilesDragEnter;child.DragLeave+=OnFilesDragLeave;child.DragDrop+=OnFilesDropped;}page.Controls.Add(dropZone);
+            dropZone=Card(10,58,1025,180,Color.FromArgb(253,252,255));dropZone.AllowDrop=true;var roundedDrop=(RoundedPanel)dropZone;roundedDrop.BorderColor=Color.FromArgb(167,155,255);roundedDrop.BorderWidth=1;roundedDrop.BorderDashStyle=System.Drawing.Drawing2D.DashStyle.Dash;dropZone.Controls.Add(new PictureBox{Image=LoadReferenceIcon(.70F),Location=new Point(66,12),Size=new Size(184,150),SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.Transparent});dropZone.Controls.Add(new Label{Text="대사 파일을 여기로 드래그하세요",Location=new Point(350,34),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",13F,FontStyle.Bold)});dropZone.Controls.Add(new Label{Text="급여대장, 사회보험 개인별 부과내역 파일,\r\n1개월 미만 대체근로자 인건비 신청 서식",Location=new Point(350,64),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8.5F)});var select=OutputButton("파일 선택","folder",350,112,142,34,UiTheme.Accent);select.Click+=(s,e)=>ChooseMultipleFiles();dropZone.Controls.Add(select);var reset=ActionButton("초기화",500,112,78,34,Color.FromArgb(105,115,137));reset.Click+=(s,e)=>ResetWorkspace();dropZone.Controls.Add(reset);fileAnalysisStatus=new Label{Text="ⓘ  파일을 올려놓으면 자료 종류와 사업장관리번호를 자동 분석합니다.",Location=new Point(596,121),AutoSize=true,ForeColor=UiMuted,BackColor=Color.FromArgb(246,244,255),Padding=new Padding(8,3,8,3),Font=new Font("맑은 고딕",7.5F)};RoundControl(fileAnalysisStatus,8);dropZone.Controls.Add(fileAnalysisStatus);dropZone.DragEnter+=OnFilesDragEnter;dropZone.DragLeave+=OnFilesDragLeave;dropZone.DragDrop+=OnFilesDropped;foreach(Control child in dropZone.Controls){child.AllowDrop=true;child.DragEnter+=OnFilesDragEnter;child.DragLeave+=OnFilesDragLeave;child.DragDrop+=OnFilesDropped;}page.Controls.Add(dropZone);
             siteCardsHost=new FlowLayoutPanel{Location=new Point(10,252),Size=new Size(1025,202),AutoScroll=true,WrapContents=false,FlowDirection=FlowDirection.LeftToRight,BackColor=UiTheme.Page,Padding=new Padding(8,3,8,3)};page.Controls.Add(siteCardsHost);var empty=Card(170,18,680,145,UiTheme.Card);empty.Name="EmptySiteState";empty.Controls.Add(new Label{Text="아직 분석된 사업장이 없습니다",Location=new Point(210,38),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",12F,FontStyle.Bold)});empty.Controls.Add(Muted("위 영역에 파일을 드래그하거나 ‘파일 선택’을 눌러 등록해 주세요.",154,75));siteCardsHost.Controls.Add(empty);
             output=new TextBox{Visible=false,Text=Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)};page.Controls.Add(output);
             page.Controls.Add(new Label{Text="●  ○  ○  ○",Location=new Point(485,458),AutoSize=true,ForeColor=Color.FromArgb(205,198,244),Font=new Font("맑은 고딕",7F)});
@@ -1407,7 +1407,7 @@ namespace InsurancePayrollValidator
     }
     class Charge
     {
-        public string Key, Name, Birth, Insurance, Source, WorkplaceNumber; public decimal CompareAmount, EmployerAmount, SettlementPersonal, SettlementEmployer;
+        public string Key, Name, Birth, Insurance, Source, WorkplaceNumber; public decimal CompareAmount, EmployerAmount, SettlementPersonal, SettlementEmployer; // Totals include settlement; settlement fields are breakdowns, never additive totals.
         public decimal HealthCurrent, LongTermCurrent, HealthSettlementHealth, LongTermSettlement, EmployerHealthCurrent, EmployerLongTermCurrent, EmployerSettlementHealth, EmployerSettlementLongTerm; public bool HasHealthComponents;
     }
     class ResultRow
@@ -1549,13 +1549,11 @@ namespace InsurancePayrollValidator
             {
                 SheetInfo si=FindSheet(p,NameAliases,BirthAliases); if(si==null){log.Add(Fail(source,path,"성명·생년월일 머리글을 찾지 못함"));return;}
                 int nc=FindCol(si,NameAliases),bc=FindCol(si,BirthAliases),jc=FindCol(si,JobAliases);
-                int hc=FindCol(si,new[]{"건강보험"}),lc=FindCol(si,new[]{"노인장기요양보험","장기요양보험"});
-                int hh=FindCol(si,new[]{"건강보험휴직정산","건강보험휴직자정산"}),lh=FindCol(si,new[]{"장기요양휴직정산","노인장기요양보험휴직정산","장기요양보험휴직정산"});
-                int hsum=FindCol(si,new[]{"건강보험기타정산합계","건강보험정산합계"}),lsum=FindCol(si,new[]{"장기요양보험기타정산합계","장기요양기타정산합계","장기요양보험정산합계"});
-                int hy=FindCol(si,new[]{"건강보험연말정산"}),ly=FindCol(si,new[]{"장기요양연말정산","장기요양보험연말정산"});
-                int pc=FindCol(si,new[]{"국민연금"}),ps=FindCol(si,new[]{"국민연금정산","국민연금소급","국민연금추납"});
-                int ec=FindCol(si,new[]{"고용보험"}),eret=FindCol(si,new[]{"고용보험퇴직정산"}),ey=FindCol(si,new[]{"고용보험연말정산"}),es=FindCol(si,new[]{"고용보험정산","고용보험휴직정산","고용보험소급"});
-                int ic=FindCol(si,new[]{"산재보험"}),iret=FindCol(si,new[]{"산재보험퇴직정산"}),iy=FindCol(si,new[]{"산재보험연말정산"}),iset=FindCol(si,new[]{"산재보험정산","산재보험휴직정산","산재보험소급"});
+                var hc=PayrollColumns(si,"건강",false);var lc=PayrollColumns(si,"요양",false);
+                var hs=PayrollColumns(si,"건강",true);var ls=PayrollColumns(si,"요양",true);
+                var pc=PayrollColumns(si,"국민",false);var ps=PayrollColumns(si,"국민",true);
+                var ec=PayrollColumns(si,"고용",false);var es=PayrollColumns(si,"고용",true);
+                var ic=PayrollColumns(si,"산재",false);var iss=PayrollColumns(si,"산재",true);
                 int count=0;
                 for(int r=si.HeaderRow+1;r<=si.Sheet.Dimension.End.Row;r++)
                 {
@@ -1564,18 +1562,50 @@ namespace InsurancePayrollValidator
                     string job=jc>0?Text(si.Sheet.Cells[r,jc].Value):"", newFund=FundOf(defaultFund,job);
                     if(!people.TryGetValue(key,out x)){x=new Person{Key=key,Name=name,Birth=birth,Source=source,Job=job,Fund=newFund};people[key]=x;}
                     else if(!x.Source.Contains(source)){x.Source += ", "+source;if(x.Fund!=newFund)x.Fund="분류필요";}
-                    decimal healthCurrent=Num(si.Sheet,r,hc),longTermCurrent=Num(si.Sheet,r,lc);
-                    decimal healthSettlementHealth=Num(si.Sheet,r,hh)+Num(si.Sheet,r,hsum)+Num(si.Sheet,r,hy),longTermSettlement=Num(si.Sheet,r,lh)+Num(si.Sheet,r,lsum)+Num(si.Sheet,r,ly);
+                    decimal healthCurrent=PayrollSum(si,r,hc),longTermCurrent=PayrollSum(si,r,lc);
+                    decimal healthSettlementHealth=PayrollSum(si,r,hs),longTermSettlement=PayrollSum(si,r,ls);
                     decimal healthSet=healthSettlementHealth+longTermSettlement;
-                    decimal pensionSet=Num(si.Sheet,r,ps),employmentSet=Num(si.Sheet,r,eret)+Num(si.Sheet,r,ey)+Num(si.Sheet,r,es),industrialSet=Num(si.Sheet,r,iret)+Num(si.Sheet,r,iy)+Num(si.Sheet,r,iset);
-                    x.HealthCurrent+=healthCurrent;x.LongTermCurrent+=longTermCurrent;x.HealthSettlementHealth+=healthSettlementHealth;x.LongTermSettlement+=longTermSettlement;x.HasHealthComponents|=hc>0||lc>0||hh>0||lh>0||hsum>0||lsum>0||hy>0||ly>0;
+                    decimal pensionSet=PayrollSum(si,r,ps),employmentSet=PayrollSum(si,r,es),industrialSet=PayrollSum(si,r,iss);
+                    x.HealthCurrent+=healthCurrent;x.LongTermCurrent+=longTermCurrent;x.HealthSettlementHealth+=healthSettlementHealth;x.LongTermSettlement+=longTermSettlement;x.HasHealthComponents|=hc.Count+lc.Count+hs.Count+ls.Count>0;
                     x.Health+=healthCurrent+longTermCurrent+healthSet;x.HealthSettlement+=healthSet;
-                    x.Pension+=Num(si.Sheet,r,pc)+pensionSet;x.PensionSettlement+=pensionSet;
-                    x.Employment+=Num(si.Sheet,r,ec)+employmentSet;x.EmploymentSettlement+=employmentSet;
-                    x.Industrial+=Num(si.Sheet,r,ic)+industrialSet;x.IndustrialSettlement+=industrialSet;count++;
+                    x.Pension+=PayrollSum(si,r,pc)+pensionSet;x.PensionSettlement+=pensionSet;
+                    x.Employment+=PayrollSum(si,r,ec)+employmentSet;x.EmploymentSettlement+=employmentSet;
+                    x.Industrial+=PayrollSum(si,r,ic)+industrialSet;x.IndustrialSettlement+=industrialSet;count++;
                 }
-                log.Add(Ok(source+" 급여대장",path,si,count,"공제열: 건강 "+Cols(hc,lc,hh,lh,hsum,lsum,hy,ly)+", 국민 "+Cols(pc,ps)+", 고용 "+Cols(ec,eret,ey,es)+", 산재 "+Cols(ic,iret,iy,iset)));
+                log.Add(Ok(source+" 급여대장",path,si,count,"인식한 개인 공제 항목: "+String.Join(", ",hc.Concat(lc).Concat(hs).Concat(ls).Concat(pc).Concat(ps).Concat(ec).Concat(es).Concat(ic).Concat(iss).Distinct().Select(c=>ExcelCellAddress.GetColumnLetter(c)+"="+si.Headers[c]))));
             }
+        }
+
+        static List<int> PayrollColumns(SheetInfo si,string insurance,bool settlement)
+        {
+            var result=new List<int>();
+            foreach(var col in si.Headers){
+                string h=Norm(col.Value);
+                if(h.Contains("기관")||h.Contains("사용자")||h.Contains("사업주")||h.Contains("요율")||h.Contains("보수월액")||h.Contains("기준소득")||h.Contains("정산사유")||h.Contains("정산기간"))continue;
+                bool care=h.Contains("장기요양"),match=insurance=="요양"?care:insurance=="건강"?h.Contains("건강보험")&&!care:insurance=="국민"?h.Contains("국민연금"):insurance=="고용"?h.Contains("고용보험"):h.Contains("산재보험");
+                if(!match)continue;
+                bool adjusted=h.Contains("정산")||h.Contains("소급")||h.Contains("추납");
+                if(adjusted!=settlement)continue;
+                // Current columns must be premium deductions, not combined current+settlement totals.
+                if(!settlement&&(h.Contains("합계")||h.Contains("총액")||h.Contains("총공제")))continue;
+                result.Add(col.Key);
+            }
+            return result;
+        }
+
+        static decimal PayrollSum(SheetInfo si,int row,List<int> columns)
+        {
+            var active=columns.Where(c=>!String.IsNullOrWhiteSpace(Text(si.Sheet.Cells[row,c].Value))).ToList();
+            // A stated settlement total includes its detail. Zero is a valid total.
+            var totals=active.Where(c=>Regex.IsMatch(Norm(si.Headers[c]),@"(?:보험료?|연금|장기요양)(?:개인부담금)?정산(?:보험료|금액)?(?:합계|총액)$")).ToList();
+            if(totals.Count>1)throw new InvalidDataException("급여대장 "+row+"행의 정산 합계 열이 중복됩니다: "+String.Join(", ",totals.Select(c=>si.Headers[c])));
+            if(totals.Count==1)return Num(si.Sheet,row,totals[0]);
+            var included=new HashSet<int>(active);
+            foreach(int total in active.Where(c=>Norm(si.Headers[c]).EndsWith("합계")||Norm(si.Headers[c]).EndsWith("총액"))){
+                string prefix=Regex.Replace(Norm(si.Headers[total]),"(?:합계|총액)$","");
+                foreach(int detail in active)if(detail!=total&&Norm(si.Headers[detail]).StartsWith(prefix))included.Remove(detail);
+            }
+            return included.Sum(c=>Num(si.Sheet,row,c));
         }
 
         static void ReadShortTermPayroll(string path,Dictionary<string,Person> people,List<Recognition> log)
@@ -1607,6 +1637,15 @@ namespace InsurancePayrollValidator
             }
         }
 
+        static int FindChargeCol(SheetInfo si,string[] aliases)
+        {
+            foreach(string alias in aliases)foreach(var header in si.Headers)
+                if(Norm(header.Value)==Norm(alias))return header.Key;
+            foreach(string alias in aliases)foreach(var header in si.Headers)
+                if(Match(header.Value,new[]{alias}))return header.Key;
+            return 0;
+        }
+
         static void ReadCharges(string path,string insurance,string source,Dictionary<string,Charge> charges,List<Recognition> log)
         {
             if(String.IsNullOrWhiteSpace(path)){log.Add(new Recognition{Kind=source,State="미선택",Detail="선택하지 않음"});return;}
@@ -1614,39 +1653,64 @@ namespace InsurancePayrollValidator
             {
                 SheetInfo si=FindSheet(p,NameAliases,BirthAliases);if(si==null){log.Add(Fail(source,path,"성명·주민등록번호 머리글을 찾지 못함"));return;}
                 string workplaceNumber=DetectWorkplaceNumber(p,si,path);
-                int nc=FindCol(si,NameAliases),bc=FindCol(si,BirthAliases),accounting=FindCol(si,new[]{"회계","회계구분"}),compare=0,employer=0,extra=0,settlementPersonal=0,settlementEmployer=0,settlementEmployerExtra=0;
+                int workplaceColumn=FindChargeCol(si,new[]{"사업장관리번호","사업장번호","사업장기호","단위사업장번호","사업장관리기호"});
+                int nc=FindChargeCol(si,NameAliases),bc=FindChargeCol(si,BirthAliases),accounting=FindChargeCol(si,new[]{"회계","회계구분"}),compare=0,employer=0,extra=0,settlementPersonal=0,settlementEmployer=0,settlementEmployerExtra=0;
                 int healthCurrent=0,longTermCurrent=0,healthSettlement=0,healthYearEnd=0,healthInterest=0,longTermSettlement=0,longTermYearEnd=0,longTermInterest=0;
                 if(insurance=="건강보험")
                 {
-                    compare=FindCol(si,new[]{"가입자총납부할보험료","가입자부담금","가입자보험료"});settlementPersonal=FindCol(si,new[]{"정산보험료계(건강+요양)","정산보험료계건강요양"});employer=source=="건강보험(공무원)"?0:compare;settlementEmployer=source=="건강보험(공무원)"?0:settlementPersonal;
-                    healthCurrent=FindCol(si,new[]{"고지금액"});if(healthCurrent==0)healthCurrent=FindCol(si,new[]{"산출보험료"});
-                    longTermCurrent=FindCol(si,new[]{"요양고지보험료"});if(longTermCurrent==0)longTermCurrent=FindCol(si,new[]{"요양산출보험료"});
-                    healthSettlement=FindCol(si,new[]{"정산금액"});healthYearEnd=FindCol(si,new[]{"연말정산"});healthInterest=FindCol(si,new[]{"건강환급금이자"});
-                    longTermSettlement=FindCol(si,new[]{"요양정산보험료"});longTermYearEnd=FindCol(si,new[]{"요양연말정산보험료"});longTermInterest=FindCol(si,new[]{"요양환급금이자"});
+                    compare=FindChargeCol(si,new[]{"가입자총납부할보험료","가입자부담금","가입자보험료"});settlementPersonal=FindChargeCol(si,new[]{"정산보험료계(건강+요양)","정산보험료계건강요양"});employer=FindChargeCol(si,new[]{"사용자총납부할보험료","기관총납부할보험료","사용자부담금","기관부담금"});settlementEmployer=FindChargeCol(si,new[]{"사용자정산보험료계","기관정산보험료계"});
+                    healthCurrent=FindChargeCol(si,new[]{"고지금액"});if(healthCurrent==0)healthCurrent=FindChargeCol(si,new[]{"산출보험료"});
+                    longTermCurrent=FindChargeCol(si,new[]{"요양고지보험료"});if(longTermCurrent==0)longTermCurrent=FindChargeCol(si,new[]{"요양산출보험료"});
+                    healthSettlement=FindChargeCol(si,new[]{"정산금액"});healthYearEnd=FindChargeCol(si,new[]{"연말정산"});healthInterest=FindChargeCol(si,new[]{"건강환급금이자"});
+                    longTermSettlement=FindChargeCol(si,new[]{"요양정산보험료"});longTermYearEnd=FindChargeCol(si,new[]{"요양연말정산보험료"});longTermInterest=FindChargeCol(si,new[]{"요양환급금이자"});
                 }
-                if(insurance=="국민연금"){compare=FindCol(si,new[]{"총부담금계본인기여금원","본인기여금원","총부담금계본인기여금당월분만표기","당월분본인기여금"});employer=FindCol(si,new[]{"총부담금계사용자부담금원","사용자부담금원","총부담금계사용자부담금당월분만표기","당월분사용자부담금"});settlementPersonal=FindCol(si,new[]{"정산보험료본인기여금원","정산본인기여금원","소급분본인기여금"});settlementEmployer=FindCol(si,new[]{"정산보험료사용자부담금원","정산사용자부담금원","소급분사용자부담금"});}
-                if(insurance=="고용보험"){compare=FindCol(si,new[]{"보험료합계①②③근로자실업급여보험료"});employer=FindCol(si,new[]{"보험료합계①②③사업주실업급여보험료"});extra=FindCol(si,new[]{"보험료합계①②③사업주고안직능보험료"});settlementPersonal=FindCol(si,new[]{"정산보험료③근로자실업급여보험료"});settlementEmployer=FindCol(si,new[]{"정산보험료③사업주실업급여보험료"});settlementEmployerExtra=FindCol(si,new[]{"정산보험료③사업주고안직능보험료"});}
-                if(insurance=="산재보험"){employer=FindCol(si,new[]{"보험료합계①②③","보험료합계","산재보험료","사업주부담보험료"});settlementEmployer=FindCol(si,new[]{"정산보험료③","정산보험료"});compare=0;}
-                bool employerRequired=!(insurance=="건강보험"&&source=="건강보험(공무원)");
+                if(insurance=="국민연금"){compare=FindChargeCol(si,new[]{"총부담금계본인기여금원","본인기여금원","총부담금계본인기여금당월분만표기","당월분본인기여금"});employer=FindChargeCol(si,new[]{"총부담금계사용자부담금원","사용자부담금원","총부담금계사용자부담금당월분만표기","당월분사용자부담금"});settlementPersonal=FindChargeCol(si,new[]{"정산보험료본인기여금원","정산본인기여금원","소급분본인기여금"});settlementEmployer=FindChargeCol(si,new[]{"정산보험료사용자부담금원","정산사용자부담금원","소급분사용자부담금"});}
+                if(insurance=="고용보험"){compare=FindChargeCol(si,new[]{"보험료합계①②③근로자실업급여보험료"});employer=FindChargeCol(si,new[]{"보험료합계①②③사업주실업급여보험료"});extra=FindChargeCol(si,new[]{"보험료합계①②③사업주고안직능보험료"});settlementPersonal=FindChargeCol(si,new[]{"정산보험료③근로자실업급여보험료"});settlementEmployer=FindChargeCol(si,new[]{"정산보험료③사업주실업급여보험료"});settlementEmployerExtra=FindChargeCol(si,new[]{"정산보험료③사업주고안직능보험료"});}
+                if(insurance=="산재보험"){employer=FindChargeCol(si,new[]{"보험료합계①②③","보험료합계","산재보험료","사업주부담보험료"});settlementEmployer=FindChargeCol(si,new[]{"정산보험료③","정산보험료"});compare=0;}
+                bool employerRequired=insurance!="건강보험";
                 if((insurance!="산재보험"&&compare==0)||(employerRequired&&employer==0)){log.Add(Fail(source,path,"보험료 금액 열을 찾지 못함. 인식한 머리글: "+String.Join(", ",si.Headers.Values.Take(20))));return;}
                 int count=0;
                 for(int r=si.HeaderRow+1;r<=si.Sheet.Dimension.End.Row;r++)
                 {
                     string name=CleanName(si.Sheet.Cells[r,nc].Value);if(name.Length==0||Norm(name)=="합계"||Norm(name)=="총계")continue;string birth=Birth6(si.Sheet.Cells[r,bc].Value);string rowSource=source;
                     if(insurance=="건강보험"&&source=="건강보험"){string accountCode=accounting>0?Regex.Replace(Text(si.Sheet.Cells[r,accounting].Value),"[^0-9]",""):"";rowSource=accountCode=="95"?"건강보험(공무원)":accountCode=="00"||accountCode=="0"?"건강보험(비공무원)":"건강보험";}
-                    string personKey=Key(name,birth), key=personKey+"|"+insurance+"|"+workplaceNumber+"|"+rowSource;Charge x;
-                    if(!charges.TryGetValue(key,out x)){x=new Charge{Key=personKey,Name=name,Birth=birth,Insurance=insurance,Source=rowSource,WorkplaceNumber=workplaceNumber};charges[key]=x;}
-                    x.CompareAmount+=Num(si.Sheet,r,compare);x.EmployerAmount+=(rowSource=="건강보험(공무원)"?0:Num(si.Sheet,r,employer))+Num(si.Sheet,r,extra);
+                    string rowWorkplace=workplaceColumn>0?Regex.Replace(Text(si.Sheet.Cells[r,workplaceColumn].Value),"[^0-9]",""):"";
+                    if(String.IsNullOrWhiteSpace(rowWorkplace))rowWorkplace=workplaceNumber;
+                    string personKey=Key(name,birth), key=personKey+"|"+insurance+"|"+rowWorkplace+"|"+rowSource;Charge x;
+                    if(!charges.TryGetValue(key,out x)){x=new Charge{Key=personKey,Name=name,Birth=birth,Insurance=insurance,Source=rowSource,WorkplaceNumber=rowWorkplace};charges[key]=x;}
+                    decimal personalTotal=Num(si.Sheet,r,compare),institutionTotal=Num(si.Sheet,r,employer)+Num(si.Sheet,r,extra);
+                    // Explicit employer amounts take precedence. Legacy non-public health inputs
+                    // contain subscriber amounts only: retain equal-share derivation, separately.
+                    bool deriveHealthEmployer=insurance=="건강보험"&&employer==0&&rowSource!="건강보험(공무원)";
+                    if(deriveHealthEmployer)institutionTotal=personalTotal;
+                    if(rowSource=="건강보험(공무원)")institutionTotal=0;
+                    if(insurance=="국민연금"){
+                        if(compare>0&&Norm(si.Headers[compare]).Contains("당월분"))personalTotal+=Num(si.Sheet,r,settlementPersonal);
+                        if(employer>0&&Norm(si.Headers[employer]).Contains("당월분"))institutionTotal+=Num(si.Sheet,r,settlementEmployer);
+                    }
+                    x.CompareAmount+=personalTotal;x.EmployerAmount+=institutionTotal;
                     if(insurance=="건강보험"&&(healthCurrent>0||longTermCurrent>0))
                     {
                         decimal hc=Num(si.Sheet,r,healthCurrent),lc=Num(si.Sheet,r,longTermCurrent),hs=Num(si.Sheet,r,healthSettlement)+Num(si.Sheet,r,healthYearEnd)+Num(si.Sheet,r,healthInterest),ls=Num(si.Sheet,r,longTermSettlement)+Num(si.Sheet,r,longTermYearEnd)+Num(si.Sheet,r,longTermInterest);
+                        // Prefer assessed current premiums. Billed columns already include adjustments.
+                        int assessedHealth=FindChargeCol(si,new[]{"산출보험료"}),assessedLong=FindChargeCol(si,new[]{"요양산출보험료"});
+                        hc=assessedHealth>0?Num(si.Sheet,r,assessedHealth):hc-hs;
+                        lc=assessedLong>0?Num(si.Sheet,r,assessedLong):lc-ls;
+                        decimal discrepancy=personalTotal-(hc+lc+hs+ls);
+                        if(discrepancy!=0)throw new InvalidDataException("건강보험 개인 총액과 건강·요양 당월/정산 내역이 일치하지 않습니다. 원자료 행 "+r+" (차액 "+discrepancy+")");
                         x.HealthCurrent+=hc;x.LongTermCurrent+=lc;x.HealthSettlementHealth+=hs;x.LongTermSettlement+=ls;x.HasHealthComponents=true;x.SettlementPersonal+=hs+ls;
-                        if(rowSource!="건강보험(공무원)"){x.EmployerHealthCurrent+=hc;x.EmployerLongTermCurrent+=lc;x.EmployerSettlementHealth+=hs;x.EmployerSettlementLongTerm+=ls;x.SettlementEmployer+=hs+ls;}
+                        if(rowSource!="건강보험(공무원)"){
+                            decimal es=settlementEmployer>0?Num(si.Sheet,r,settlementEmployer):deriveHealthEmployer?hs+ls:0;
+                            decimal eh,el,esh,esl;
+                            if(deriveHealthEmployer){eh=hc;el=lc;esh=hs;esl=ls;}
+                            else{SplitCombinedHealth(institutionTotal-es,out eh,out el);SplitCombinedHealth(es,out esh,out esl);}
+                            x.EmployerHealthCurrent+=eh;x.EmployerLongTermCurrent+=el;x.EmployerSettlementHealth+=esh;x.EmployerSettlementLongTerm+=esl;x.SettlementEmployer+=es;
+                        }
                     }
-                    else{x.SettlementPersonal+=Num(si.Sheet,r,settlementPersonal);x.SettlementEmployer+=(rowSource=="건강보험(공무원)"?0:Num(si.Sheet,r,settlementEmployer))+Num(si.Sheet,r,settlementEmployerExtra);}
+                    else{x.SettlementPersonal+=Num(si.Sheet,r,settlementPersonal);x.SettlementEmployer+=(rowSource=="건강보험(공무원)"?0:deriveHealthEmployer?Num(si.Sheet,r,settlementPersonal):Num(si.Sheet,r,settlementEmployer))+Num(si.Sheet,r,settlementEmployerExtra);}
                     count++;
                 }
-                log.Add(Ok(source,path,si,count,"사업장번호 "+workplaceNumber+" / 비교금액 "+Cols(compare)+", 기관부담 "+Cols(employer,extra)+", 정산 개인 "+Cols(settlementPersonal)+", 정산 기관 "+Cols(settlementEmployer,settlementEmployerExtra)+(insurance=="건강보험"?" / 건강·장기요양 원자료 분리열 "+Cols(healthCurrent,longTermCurrent,healthSettlement,healthYearEnd,healthInterest,longTermSettlement,longTermYearEnd,longTermInterest):"")));
+                log.Add(Ok(source,path,si,count,"사업장번호 "+workplaceNumber+" / 비교금액 "+Cols(compare)+", 기관부담 "+Cols(employer,extra)+", 정산 개인 "+Cols(settlementPersonal)+", 정산 기관 "+Cols(settlementEmployer,settlementEmployerExtra)+(insurance=="건강보험"?(employer==0?" / 기관: 비공무원 동일부담 산출(개인 원자료와 구분), 공무원 제외":" / 기관: 별도 원자료 열")+" / 건강·장기요양 원자료 분리열 "+Cols(healthCurrent,longTermCurrent,healthSettlement,healthYearEnd,healthInterest,longTermSettlement,longTermYearEnd,longTermInterest):"")));
             }
         }
 
@@ -2035,7 +2099,7 @@ namespace InsurancePayrollValidator
 
         static ResultRow CombineInsurance(IEnumerable<ResultRow> rows,string insurance)
         {
-            var selected=rows.Where(x=>x.Insurance==insurance).ToList();return new ResultRow{Insurance=insurance,Charge=selected.Sum(x=>x.Charge==0&&x.SettlementPersonal!=0?x.SettlementPersonal:x.Charge),Employer=selected.Sum(x=>x.Employer),SettlementPersonal=selected.Sum(x=>x.SettlementPersonal),SettlementEmployer=selected.Sum(x=>x.SettlementEmployer),Deduction=selected.Sum(x=>x.Deduction),DeductionSettlement=selected.Sum(x=>x.DeductionSettlement),DeductionHealth=selected.Sum(x=>x.DeductionHealth),DeductionLongTerm=selected.Sum(x=>x.DeductionLongTerm),DeductionSettlementHealth=selected.Sum(x=>x.DeductionSettlementHealth),DeductionSettlementLongTerm=selected.Sum(x=>x.DeductionSettlementLongTerm),ChargeHealth=selected.Sum(x=>x.ChargeHealth),ChargeLongTerm=selected.Sum(x=>x.ChargeLongTerm),SettlementPersonalHealth=selected.Sum(x=>x.SettlementPersonalHealth),SettlementPersonalLongTerm=selected.Sum(x=>x.SettlementPersonalLongTerm),EmployerHealth=selected.Sum(x=>x.EmployerHealth),EmployerLongTerm=selected.Sum(x=>x.EmployerLongTerm),SettlementEmployerHealth=selected.Sum(x=>x.SettlementEmployerHealth),SettlementEmployerLongTerm=selected.Sum(x=>x.SettlementEmployerLongTerm),HasHealthComponents=selected.Any(x=>x.HasHealthComponents)};
+            var selected=rows.Where(x=>x.Insurance==insurance).ToList();return new ResultRow{Insurance=insurance,Charge=selected.Sum(x=>x.Charge),Employer=selected.Sum(x=>x.Employer),SettlementPersonal=selected.Sum(x=>x.SettlementPersonal),SettlementEmployer=selected.Sum(x=>x.SettlementEmployer),Deduction=selected.Sum(x=>x.Deduction),DeductionSettlement=selected.Sum(x=>x.DeductionSettlement),DeductionHealth=selected.Sum(x=>x.DeductionHealth),DeductionLongTerm=selected.Sum(x=>x.DeductionLongTerm),DeductionSettlementHealth=selected.Sum(x=>x.DeductionSettlementHealth),DeductionSettlementLongTerm=selected.Sum(x=>x.DeductionSettlementLongTerm),ChargeHealth=selected.Sum(x=>x.ChargeHealth),ChargeLongTerm=selected.Sum(x=>x.ChargeLongTerm),SettlementPersonalHealth=selected.Sum(x=>x.SettlementPersonalHealth),SettlementPersonalLongTerm=selected.Sum(x=>x.SettlementPersonalLongTerm),EmployerHealth=selected.Sum(x=>x.EmployerHealth),EmployerLongTerm=selected.Sum(x=>x.EmployerLongTerm),SettlementEmployerHealth=selected.Sum(x=>x.SettlementEmployerHealth),SettlementEmployerLongTerm=selected.Sum(x=>x.SettlementEmployerLongTerm),HasHealthComponents=selected.Any(x=>x.HasHealthComponents)};
         }
         static void SplitCombinedHealth(decimal total,out decimal health,out decimal longTerm){if(total==0){health=0;longTerm=0;return;}decimal sign=total<0?-1:1,abs=Math.Abs(total);health=Math.Floor((abs/1.1314m)/10m)*10m*sign;longTerm=total-health;}
         static string DisplayName(IEnumerable<ResultRow> group,List<ResultRow> allRows)
@@ -2479,7 +2543,7 @@ End Sub
                     decimal hp=0,he=0,lp=0,le=0,pp=0,pe=0,ep=0,ee=0,ip=0,ie=0,hd=0,ld=0,pd=0,ed=0,id=0;int review=0,shortTerm=0;
                     foreach(var person in fundGroup)
                     {
-                        ResultRow h=CombineInsurance(person,"건강보험"),p=CombineInsurance(person,"국민연금"),e=CombineInsurance(person,"고용보험"),ind=CombineInsurance(person,"산재보험");decimal personHp=h.ChargeHealth+h.SettlementPersonalHealth,personLp=h.ChargeLongTerm+h.SettlementPersonalLongTerm,personHe=h.EmployerHealth+h.SettlementEmployerHealth,personLe=h.EmployerLongTerm+h.SettlementEmployerLongTerm,payrollHp=h.DeductionHealth+h.DeductionSettlementHealth,payrollLp=h.DeductionLongTerm+h.DeductionSettlementLongTerm;if(personHp==0&&personLp==0&&h.Charge+h.SettlementPersonal!=0){personHp=h.Charge+h.SettlementPersonal;payrollHp=h.Deduction+h.DeductionSettlement;}if(personHe==0&&personLe==0&&h.Employer+h.SettlementEmployer!=0)personHe=h.Employer+h.SettlementEmployer;hp+=personHp;lp+=personLp;he+=personHe;le+=personLe;pp+=p.Charge+p.SettlementPersonal;pe+=p.Employer+p.SettlementEmployer;ep+=e.Charge;ee+=e.Employer;ip+=ind.Charge;ie+=ind.Employer;hd+=personHp-payrollHp;ld+=personLp-payrollLp;pd+=p.Charge+p.SettlementPersonal-p.Deduction-p.DeductionSettlement;ed+=e.Charge-e.Deduction-e.DeductionSettlement;id+=ind.Charge-ind.Deduction-ind.DeductionSettlement;
+                        ResultRow h=CombineInsurance(person,"건강보험"),p=CombineInsurance(person,"국민연금"),e=CombineInsurance(person,"고용보험"),ind=CombineInsurance(person,"산재보험");decimal personHp=h.ChargeHealth+h.SettlementPersonalHealth,personLp=h.ChargeLongTerm+h.SettlementPersonalLongTerm,personHe=h.EmployerHealth+h.SettlementEmployerHealth,personLe=h.EmployerLongTerm+h.SettlementEmployerLongTerm,payrollHp=h.DeductionHealth+h.DeductionSettlementHealth,payrollLp=h.DeductionLongTerm+h.DeductionSettlementLongTerm;if(personHp==0&&personLp==0&&h.Charge!=0){personHp=h.Charge;payrollHp=h.Deduction;}if(personHe==0&&personLe==0&&h.Employer!=0)personHe=h.Employer;hp+=personHp;lp+=personLp;he+=personHe;le+=personLe;pp+=p.Charge;pe+=p.Employer;ep+=e.Charge;ee+=e.Employer;ip+=ind.Charge;ie+=ind.Employer;hd+=personHp-payrollHp;ld+=personLp-payrollLp;pd+=p.Charge-p.Deduction;ed+=e.Charge-e.Deduction;id+=ind.Charge-ind.Deduction;
                         ResultRow first=person.First();if(first.Fund=="분류필요"||person.Any(x=>x.Status!="정상"&&x.Status!="부과확인")||person.Any(x=>Math.Abs(x.SettlementPersonal-x.DeductionSettlement)>.5m))review++;if(first.Fund.Contains("일용")||(!String.IsNullOrWhiteSpace(first.Source)&&first.Source.Contains("단기기간제 근로자"))||(!String.IsNullOrWhiteSpace(first.Reason)&&Regex.IsMatch(first.Reason,"대체|단기")))shortTerm++;
                     }
                     object[] values={site.Key,fundGroup.Key,fundGroup.Count(),hp,he,lp,le,pp,pe,ep,ee,ip,ie,he+le+pe+ee+ie,review,shortTerm,period.Year,period.Month,hd,ld,pd,ed,id};for(int c=0;c<values.Length;c++)ws.Cells[row,c+1].Value=values[c];row++;
@@ -2489,10 +2553,10 @@ End Sub
         }
         static void WriteUiIndividualSheet(ExcelWorksheet ws,List<ResultRow> rows,BillingPeriod period)
         {
-            string[] headers={"사업장관리번호","재원","이름","생년월일","직종명","대사결과","건강고지","건강급여","건강차액","국민고지","국민급여","국민차액","고용고지","고용급여","고용차액","산재고지","산재급여","산재차액","연도","월","확인사유","건강개인","건강기관","장기요양개인","장기요양기관","국민개인","국민기관","고용개인","고용기관","산재개인","산재기관","건강차액분리","장기요양차액분리","대체근로자","요약기여유효"};WriteHeader(ws,headers);int row=2;
+            string[] headers={"사업장관리번호","재원","이름","생년월일","직종명","대사결과","건강고지","건강급여","건강차액","국민고지","국민급여","국민차액","고용고지","고용급여","고용차액","산재고지","산재급여","산재차액","연도","월","확인사유","건강개인","건강기관","장기요양개인","장기요양기관","국민개인","국민기관","고용개인","고용기관","산재개인","산재기관","건강차액분리","장기요양차액분리","대체근로자","요약기여유효"};WriteHeader(ws,headers);string[] settlementHeaders={"건강기관정산(포함액)","요양기관정산(포함액)","국민기관정산(포함액)","고용기관정산(포함액)","산재기관정산(포함액)"};for(int c=0;c<settlementHeaders.Length;c++)ws.Cells[1,36+c].Value=settlementHeaders[c];int row=2;
             foreach(var site in rows.Where(x=>!IsMissingWorkplace(x.WorkplaceNumber)).GroupBy(x=>x.WorkplaceNumber).OrderBy(x=>x.Key))foreach(var person in site.GroupBy(ResultIdentityKey).OrderBy(x=>UiFundOrder(UiFundName(x.First().Fund))).ThenBy(x=>x.First().Name))
             {
-                ResultRow first=person.First(),h=CombineInsurance(person,"건강보험"),p=CombineInsurance(person,"국민연금"),e=CombineInsurance(person,"고용보험"),ind=CombineInsurance(person,"산재보험");decimal personHp=h.ChargeHealth+h.SettlementPersonalHealth,personLp=h.ChargeLongTerm+h.SettlementPersonalLongTerm,personHe=h.EmployerHealth+h.SettlementEmployerHealth,personLe=h.EmployerLongTerm+h.SettlementEmployerLongTerm,payrollHp=h.DeductionHealth+h.DeductionSettlementHealth,payrollLp=h.DeductionLongTerm+h.DeductionSettlementLongTerm;if(personHp==0&&personLp==0&&h.Charge+h.SettlementPersonal!=0){personHp=h.Charge+h.SettlementPersonal;payrollHp=h.Deduction+h.DeductionSettlement;}if(personHe==0&&personLe==0&&h.Employer+h.SettlementEmployer!=0)personHe=h.Employer+h.SettlementEmployer;decimal healthNotice=personHp+personLp,healthPayroll=payrollHp+payrollLp,pensionNotice=p.Charge+p.SettlementPersonal,pensionPayroll=p.Deduction+p.DeductionSettlement,employmentNotice=e.Charge,employmentPayroll=e.Deduction+e.DeductionSettlement,industrialNotice=ind.Employer+ind.SettlementEmployer,industrialPayroll=industrialNotice;decimal[] differences={healthNotice-healthPayroll,pensionNotice-pensionPayroll,employmentNotice-employmentPayroll};bool positive=differences.Any(x=>x>.5m),negative=differences.Any(x=>x<-.5m),classified=first.Fund!="분류필요",unusual=person.Any(x=>x.Status!="정상"&&x.Status!="부과확인"&&x.Status!="추납"&&x.Status!="환급"),shortTerm=first.Fund.Contains("일용")||(!String.IsNullOrWhiteSpace(first.Source)&&first.Source.Contains("단기기간제 근로자"))||(!String.IsNullOrWhiteSpace(first.Reason)&&Regex.IsMatch(first.Reason,"대체|단기"));string status=!classified||unusual||positive&&negative?"확인 필요":positive?"추징 필요":negative?"환급 필요":"정상";string reason=!classified?"재원 분류 필요":positive&&negative?"보험별 추징·환급 혼재":String.Join(", ",person.Select(x=>x.Status).Where(x=>x!="정상"&&x!="부과확인").Distinct());object[] values={site.Key,UiIndividualFundName(first.Fund),first.Name,first.Birth,first.Job,status,healthNotice,healthPayroll,differences[0],pensionNotice,pensionPayroll,differences[1],employmentNotice,employmentPayroll,differences[2],industrialNotice,industrialPayroll,0,period.Year,period.Month,reason,personHp,personHe,personLp,personLe,pensionNotice,p.Employer+p.SettlementEmployer,employmentNotice,e.Employer,ind.Charge,ind.Employer,personHp-payrollHp,personLp-payrollLp,shortTerm?1:0,1};for(int c=0;c<values.Length;c++)ws.Cells[row,c+1].Value=values[c];row++;
+                ResultRow first=person.First(),h=CombineInsurance(person,"건강보험"),p=CombineInsurance(person,"국민연금"),e=CombineInsurance(person,"고용보험"),ind=CombineInsurance(person,"산재보험");decimal personHp=h.ChargeHealth+h.SettlementPersonalHealth,personLp=h.ChargeLongTerm+h.SettlementPersonalLongTerm,personHe=h.EmployerHealth+h.SettlementEmployerHealth,personLe=h.EmployerLongTerm+h.SettlementEmployerLongTerm,payrollHp=h.DeductionHealth+h.DeductionSettlementHealth,payrollLp=h.DeductionLongTerm+h.DeductionSettlementLongTerm;if(personHp==0&&personLp==0&&h.Charge!=0){personHp=h.Charge;payrollHp=h.Deduction;}if(personHe==0&&personLe==0&&h.Employer!=0)personHe=h.Employer;decimal healthNotice=personHp+personLp,healthPayroll=payrollHp+payrollLp,pensionNotice=p.Charge,pensionPayroll=p.Deduction,employmentNotice=e.Charge,employmentPayroll=e.Deduction,industrialNotice=ind.Employer,industrialPayroll=industrialNotice;decimal[] differences={healthNotice-healthPayroll,pensionNotice-pensionPayroll,employmentNotice-employmentPayroll};bool positive=differences.Any(x=>x>.5m),negative=differences.Any(x=>x<-.5m),classified=first.Fund!="분류필요",unusual=person.Any(x=>x.Status!="정상"&&x.Status!="부과확인"&&x.Status!="추납"&&x.Status!="환급"),shortTerm=first.Fund.Contains("일용")||(!String.IsNullOrWhiteSpace(first.Source)&&first.Source.Contains("단기기간제 근로자"))||(!String.IsNullOrWhiteSpace(first.Reason)&&Regex.IsMatch(first.Reason,"대체|단기"));string status=!classified||unusual||positive&&negative?"확인 필요":positive?"추징 필요":negative?"환급 필요":"정상";string reason=!classified?"재원 분류 필요":positive&&negative?"보험별 추징·환급 혼재":String.Join(", ",person.Select(x=>x.Status).Where(x=>x!="정상"&&x!="부과확인").Distinct());object[] values={site.Key,UiIndividualFundName(first.Fund),first.Name,first.Birth,first.Job,status,healthNotice,healthPayroll,differences[0],pensionNotice,pensionPayroll,differences[1],employmentNotice,employmentPayroll,differences[2],industrialNotice,industrialPayroll,0,period.Year,period.Month,reason,personHp,personHe,personLp,personLe,pensionNotice,p.Employer,employmentNotice,e.Employer,ind.Charge,ind.Employer,personHp-payrollHp,personLp-payrollLp,shortTerm?1:0,1,h.SettlementEmployerHealth,h.SettlementEmployerLongTerm,p.SettlementEmployer,e.SettlementEmployer,ind.SettlementEmployer};for(int c=0;c<values.Length;c++)ws.Cells[row,c+1].Value=values[c];row++;
             }
             Finish(ws,headers.Length,Math.Max(1,row-1));if(row>2)ws.Cells[2,7,row-1,33].Style.Numberformat.Format="#,##0;[Red]-#,##0";
         }
@@ -2623,9 +2687,9 @@ End Sub
     {
         class SubmitPerson
         {
-            public string Fund, Name, Birth, Job, Reason; public decimal Health, HealthOnly, LongTerm, Pension, Employment, Industrial, HealthSettlement, PensionSettlement, EmploymentSettlement, IndustrialSettlement, HealthBase, PensionBase, EmploymentBase, IndustrialBase; public bool HasHealthParts,ShortTerm;
+            public string Fund, Name, Birth, Job, Reason; public decimal Health, HealthOnly, LongTerm, Pension, Employment, Industrial, HealthSettlement, PensionSettlement, EmploymentSettlement, IndustrialSettlement, HealthBase, PensionBase, EmploymentBase, IndustrialBase; public decimal HealthSettlementHealth,LongTermSettlement; public bool HasHealthParts,ShortTerm;
         }
-        class UiSubmissionIdentity{public string Site,Fund,Name,Birth,Job,Reason;public bool ShortTerm,HasSummaryBreakdown;public decimal HealthEmployer,LongTermEmployer,PensionEmployer,EmploymentEmployer,IndustrialEmployer;}
+        class UiSubmissionIdentity{public string Site,Fund,Name,Birth,Job,Reason;public bool ShortTerm,HasSummaryBreakdown;public decimal HealthSettlementHealth,LongTermSettlement,PensionSettlement,EmploymentSettlement,IndustrialSettlement;public decimal HealthEmployer,LongTermEmployer,PensionEmployer,EmploymentEmployer,IndustrialEmployer;}
         class HealthParts { public decimal Health, LongTerm; }
 
         public static string Create(string resultPath,string outputFolder,bool teacher,SubmissionInfo submissionInfo=null)
@@ -2642,12 +2706,25 @@ End Sub
                 Dictionary<string,HealthParts> healthParts=ReadHealthParts(source);Dictionary<string,string> reviewFundOverrides=ReadReviewFundOverrides(source);Dictionary<string,UiSubmissionIdentity> uiOverrides=ReadUiSubmissionIdentities(source);
                 Dictionary<string,decimal> healthBases=ReadWageBases(source,"건강보험",new[]{"보수월액"}),pensionBases=ReadWageBases(source,"국민연금",new[]{"기준소득월액"}),employmentBases=ReadWageBases(source,"고용보험",new[]{"월평균보수금액","월평균보수액"}),industrialBases=ReadWageBases(source,"산재보험",new[]{"월평균보수액","월평균보수금액"});
                 int last=people.Dimension==null?1:people.Dimension.End.Row;
-                for(int r=2;r<=last;r++)
+                bool useUi=uiOverrides.Count>0&&uiOverrides.Values.All(x=>x.HasSummaryBreakdown);
+                if(useUi&&source.Workbook.Worksheets["UI개인별데이터"].Cells[1,40].Text!="산재기관정산(포함액)")
+                    throw new InvalidOperationException("이전 버전의 대사 결과입니다. 정산 중복 및 누락 방지를 위해 원본 급여·보험 자료로 이 테스트 버전에서 새로 대사한 뒤 제출서를 생성해 주세요.");
+                for(int r=2;!useUi&&r<=last;r++)
                 {
-                    string name=CellText(source,people,r,2);if(String.IsNullOrWhiteSpace(name))continue;string birth=NormalizeBirth(CellText(source,people,r,3)),key=PersonKey(name,birth),fund=CellText(source,people,r,1),job=CellText(source,people,r,5),reviewFund;bool sourceShortTerm=Regex.IsMatch(NormalizeHeader(fund)+NormalizeHeader(job),"일용|단기|대체",RegexOptions.IgnoreCase);UiSubmissionIdentity ui;if(reviewFundOverrides.TryGetValue(key,out reviewFund)&&!sourceShortTerm)fund=reviewFund;if(uiOverrides.TryGetValue(key,out ui)){if(!sourceShortTerm)fund=ui.Fund;if(!String.IsNullOrWhiteSpace(ui.Job))job=ui.Job;if(!String.IsNullOrWhiteSpace(submissionInfo.Site)&&!String.Equals(ui.Site,submissionInfo.Site,StringComparison.OrdinalIgnoreCase))continue;}bool selected=teacher?IsTeacherSubmissionFund(fund):IsWorkerSubmissionFund(fund);if(!selected)continue;SubmitPerson item=new SubmitPerson{Fund=fund,Name=name,Birth=birth,Job=job,Reason=CellText(source,people,r,37),ShortTerm=sourceShortTerm||ui!=null&&ui.ShortTerm,Health=CellNumber(source,people,r,6),Pension=CellNumber(source,people,r,7),Employment=CellNumber(source,people,r,8),Industrial=CellNumber(source,people,r,9),HealthSettlement=CellNumber(source,people,r,19),EmploymentSettlement=CellNumber(source,people,r,21),IndustrialSettlement=CellNumber(source,people,r,23),PensionSettlement=CellNumber(source,people,r,36)};if(!sourceShortTerm&&ui!=null&&ui.HasSummaryBreakdown){item.Health=ui.HealthEmployer+ui.LongTermEmployer;item.Pension=ui.PensionEmployer;item.Employment=ui.EmploymentEmployer;item.Industrial=ui.IndustrialEmployer;}
+                    string name=CellText(source,people,r,2);if(String.IsNullOrWhiteSpace(name))continue;string birth=NormalizeBirth(CellText(source,people,r,3)),key=PersonKey(name,birth),fund=CellText(source,people,r,1),job=CellText(source,people,r,5),reviewFund;bool sourceShortTerm=Regex.IsMatch(NormalizeHeader(fund)+NormalizeHeader(job),"일용|단기|대체",RegexOptions.IgnoreCase);UiSubmissionIdentity ui;if(reviewFundOverrides.TryGetValue(key,out reviewFund)&&!sourceShortTerm)fund=reviewFund;if((ui=uiOverrides.Values.FirstOrDefault(x=>PersonKey(x.Name,x.Birth)==key&&(String.IsNullOrWhiteSpace(submissionInfo.Site)||x.Site==submissionInfo.Site)))!=null){if(!sourceShortTerm)fund=ui.Fund;if(!String.IsNullOrWhiteSpace(ui.Job))job=ui.Job;if(!String.IsNullOrWhiteSpace(submissionInfo.Site)&&!String.Equals(ui.Site,submissionInfo.Site,StringComparison.OrdinalIgnoreCase))continue;}bool selected=teacher?IsTeacherSubmissionFund(fund):IsWorkerSubmissionFund(fund);if(!selected)continue;SubmitPerson item=new SubmitPerson{Fund=fund,Name=name,Birth=birth,Job=job,Reason=CellText(source,people,r,37),ShortTerm=sourceShortTerm||ui!=null&&ui.ShortTerm,Health=CellNumber(source,people,r,6),Pension=CellNumber(source,people,r,7),Employment=CellNumber(source,people,r,8),Industrial=CellNumber(source,people,r,9),HealthSettlement=CellNumber(source,people,r,19),EmploymentSettlement=CellNumber(source,people,r,21),IndustrialSettlement=CellNumber(source,people,r,23),PensionSettlement=CellNumber(source,people,r,36)};if(!sourceShortTerm&&ui!=null&&ui.HasSummaryBreakdown){item.Health=ui.HealthEmployer+ui.LongTermEmployer;item.Pension=ui.PensionEmployer;item.Employment=ui.EmploymentEmployer;item.Industrial=ui.IndustrialEmployer;}
                     HealthParts parts;if(!sourceShortTerm&&ui!=null&&ui.HasSummaryBreakdown){item.HealthOnly=ui.HealthEmployer;item.LongTerm=ui.LongTermEmployer;item.HasHealthParts=true;}else if(healthParts.TryGetValue(key,out parts)){decimal delta=item.Health-parts.Health-parts.LongTerm;item.HealthOnly=parts.Health+delta;item.LongTerm=parts.LongTerm;item.HasHealthParts=true;}healthBases.TryGetValue(key,out item.HealthBase);pensionBases.TryGetValue(key,out item.PensionBase);employmentBases.TryGetValue(key,out item.EmploymentBase);industrialBases.TryGetValue(key,out item.IndustrialBase);targets.Add(item);
                 }
-                if(!teacher)foreach(KeyValuePair<string,UiSubmissionIdentity> pair in uiOverrides){UiSubmissionIdentity ui=pair.Value;if(!ui.ShortTerm||targets.Any(x=>PersonKey(x.Name,x.Birth)==pair.Key))continue;if(!String.IsNullOrWhiteSpace(submissionInfo.Site)&&!String.Equals(ui.Site,submissionInfo.Site,StringComparison.OrdinalIgnoreCase))continue;targets.Add(new SubmitPerson{Fund=ui.Fund,Name=ui.Name,Birth=ui.Birth,Job=ui.Job,Reason=String.IsNullOrWhiteSpace(ui.Reason)?"1개월 미만 대체근로자":ui.Reason,ShortTerm=true,Health=ui.HealthEmployer+ui.LongTermEmployer,HealthOnly=ui.HealthEmployer,LongTerm=ui.LongTermEmployer,HasHealthParts=ui.HasSummaryBreakdown,Pension=ui.PensionEmployer,Employment=ui.EmploymentEmployer,Industrial=ui.IndustrialEmployer});}
+                if(useUi)foreach(UiSubmissionIdentity ui in uiOverrides.Values){
+                    if(!String.IsNullOrWhiteSpace(submissionInfo.Site)&&!String.Equals(ui.Site,submissionInfo.Site,StringComparison.OrdinalIgnoreCase))continue;
+                    if(teacher?!IsTeacherSubmissionFund(ui.Fund):!(IsWorkerSubmissionFund(ui.Fund)||ui.ShortTerm))continue;
+                    string key=PersonKey(ui.Name,ui.Birth);
+                    var item=new SubmitPerson{Fund=ui.Fund,Name=ui.Name,Birth=ui.Birth,Job=ui.Job,Reason=ui.Reason,ShortTerm=ui.ShortTerm,
+                        Health=ui.HealthEmployer+ui.LongTermEmployer,HealthOnly=ui.HealthEmployer,LongTerm=ui.LongTermEmployer,HasHealthParts=true,
+                        Pension=ui.PensionEmployer,Employment=ui.EmploymentEmployer,Industrial=ui.IndustrialEmployer,
+                        HealthSettlementHealth=ui.HealthSettlementHealth,LongTermSettlement=ui.LongTermSettlement,
+                        PensionSettlement=ui.PensionSettlement,EmploymentSettlement=ui.EmploymentSettlement,IndustrialSettlement=ui.IndustrialSettlement};
+                    healthBases.TryGetValue(key,out item.HealthBase);pensionBases.TryGetValue(key,out item.PensionBase);employmentBases.TryGetValue(key,out item.EmploymentBase);industrialBases.TryGetValue(key,out item.IndustrialBase);targets.Add(item);
+                }
                 if(targets.Count==0){string found=String.Join(", ",Enumerable.Range(2,Math.Max(0,last-1)).Select(r=>CellText(source,people,r,1)).Where(x=>!String.IsNullOrWhiteSpace(x)).Distinct().Take(10));throw new InvalidOperationException(targetFund+"으로 분류된 제출 대상자가 없습니다. 검증 결과의 '근무자별 부담금' A열 분류를 확인해 주세요."+(found.Length>0?"\r\n현재 확인된 분류: "+found:""));}
                 if(teacher)return CreateTeacherWithExcel(targets,year,month,submissionInfo,outputFolder);
                 return CreateWorkerWithExcel(targets,year,month,submissionInfo,outputFolder);
@@ -2663,7 +2740,7 @@ End Sub
 
         static Dictionary<string,UiSubmissionIdentity> ReadUiSubmissionIdentities(ExcelPackage source)
         {
-            var result=new Dictionary<string,UiSubmissionIdentity>();ExcelWorksheet ws=source.Workbook.Worksheets["UI개인별데이터"];if(ws==null||ws.Dimension==null)return result;for(int r=2;r<=ws.Dimension.End.Row;r++){string name=CellText(source,ws,r,3),birth=NormalizeBirth(CellText(source,ws,r,4));if(String.IsNullOrWhiteSpace(name))continue;result[PersonKey(name,birth)]=new UiSubmissionIdentity{Site=CellText(source,ws,r,1),Fund=CellText(source,ws,r,2),Name=name,Birth=birth,Job=CellText(source,ws,r,5),Reason=CellText(source,ws,r,21),HealthEmployer=CellNumber(source,ws,r,23),LongTermEmployer=CellNumber(source,ws,r,25),PensionEmployer=CellNumber(source,ws,r,27),EmploymentEmployer=CellNumber(source,ws,r,29),IndustrialEmployer=CellNumber(source,ws,r,31),ShortTerm=ToInt(ws.Cells[r,34].Value,0)>0,HasSummaryBreakdown=ToInt(ws.Cells[r,35].Value,0)>0};}return result;
+            var result=new Dictionary<string,UiSubmissionIdentity>();ExcelWorksheet ws=source.Workbook.Worksheets["UI개인별데이터"];if(ws==null||ws.Dimension==null)return result;for(int r=2;r<=ws.Dimension.End.Row;r++){string name=CellText(source,ws,r,3),birth=NormalizeBirth(CellText(source,ws,r,4));if(String.IsNullOrWhiteSpace(name))continue;result[CellText(source,ws,r,1)+"|"+PersonKey(name,birth)+"|"+CellText(source,ws,r,2)+"|"+CellText(source,ws,r,34)]=new UiSubmissionIdentity{Site=CellText(source,ws,r,1),Fund=CellText(source,ws,r,2),Name=name,Birth=birth,Job=CellText(source,ws,r,5),Reason=CellText(source,ws,r,21),HealthEmployer=CellNumber(source,ws,r,23),LongTermEmployer=CellNumber(source,ws,r,25),PensionEmployer=CellNumber(source,ws,r,27),EmploymentEmployer=CellNumber(source,ws,r,29),IndustrialEmployer=CellNumber(source,ws,r,31),ShortTerm=ToInt(ws.Cells[r,34].Value,0)>0,HasSummaryBreakdown=ToInt(ws.Cells[r,35].Value,0)>0,HealthSettlementHealth=CellNumber(source,ws,r,36),LongTermSettlement=CellNumber(source,ws,r,37),PensionSettlement=CellNumber(source,ws,r,38),EmploymentSettlement=CellNumber(source,ws,r,39),IndustrialSettlement=CellNumber(source,ws,r,40)};}return result;
         }
 
         static Dictionary<string,string> ReadReviewFundOverrides(ExcelPackage source)
@@ -2774,21 +2851,18 @@ End Sub
                     bool shortTerm=IsFixedTermWorker(x);
                     ws.Cells[r,1].Value2=i+1;ws.Cells[r,2].Value2=info.RecipientCode??"";ws.Cells[r,3].Value2=info.InstitutionName??"";ws.Cells[r,4].Value2=info.ManagerName??"";
                     ws.Cells[r,5].Value2=x.Job;ws.Cells[r,6].Value2=x.Name;ws.Cells[r,7].Value2=shortTerm?"기간제":"무기";if(shortTerm)ws.Cells[r,8].Value2=x.Reason??"";ws.Cells[r,9].Value2="N";
-                    if(shortTerm)
-                    {
-                        if(health!=0)ws.Cells[r,15].Value2=health;
-                        if(longTerm!=0)ws.Cells[r,19].Value2=longTerm;
-                        if(x.Pension!=0)ws.Cells[r,23].Value2=x.Pension;
-                        ws.Cells[r,27].Value2=x.Employment;
-                        ws.Cells[r,31].Value2=x.Industrial;
-                    }
-                    else
-                    {
-                        ws.Cells[r,10].Value2=x.HealthBase;
-                        ws.Cells[r,11].Value2=x.PensionBase;
-                        ws.Cells[r,12].Value2=x.EmploymentBase!=0?x.EmploymentBase:x.IndustrialBase;
-                    }
+                    ws.Cells[r,10].Value2=x.HealthBase;
+                    ws.Cells[r,11].Value2=x.PensionBase;
+                    ws.Cells[r,12].Value2=x.EmploymentBase!=0?x.EmploymentBase:x.IndustrialBase;
                     ws.Cells[r,29].Value2=industrialRate;
+                    {
+                        // Preserve the template's base-wage formulas. Only settlements are inputs.
+                        ws.Cells[r,15].Value2=x.HealthSettlementHealth;
+                        ws.Cells[r,19].Value2=x.LongTermSettlement;
+                        ws.Cells[r,23].Value2=x.PensionSettlement;
+                        ws.Cells[r,27].Value2=x.EmploymentSettlement;
+                        ws.Cells[r,31].Value2=x.IndustrialSettlement;
+                    }
                 }
                 excel.CalculateFullRebuild();excel.CutCopyMode=false;book.SaveAs(outputPath,51);return outputPath;
             }
@@ -2959,7 +3033,17 @@ End Sub
                 if(ws.Dimension==null)continue;int header=0,nameCol=0,birthCol=0,baseCol=0;
                 for(int r=1;r<=Math.Min(12,ws.Dimension.End.Row);r++)
                 {
-                    int nc=0,bc=0,vc=0;for(int c=1;c<=Math.Min(100,ws.Dimension.End.Column);c++){string h=NormalizeHeader(Convert.ToString(ws.Cells[r,c].Value));if(h=="성명"||h=="근로자명"||h=="가입자명")nc=c;if(h=="주민등록번호"||h=="생년월일")bc=c;if(baseAliases.Any(a=>h.Contains(NormalizeHeader(a))))vc=c;}
+                    int nc=0,bc=0,vc=0,baseScore=0;
+                    for(int c=1;c<=Math.Min(100,ws.Dimension.End.Column);c++){
+                        string h=NormalizeHeader(Convert.ToString(ws.Cells[r,c].Value));
+                        if(h=="성명"||h=="근로자명"||h=="가입자명")nc=c;
+                        if(h=="주민등록번호"||h=="생년월일")bc=c;
+                        if(!baseAliases.Any(a=>h.Contains(NormalizeHeader(a))))continue;
+                        // Retroactive wage bases describe another period, not this month's base.
+                        if(h.Contains("소급")||h.Contains("정산")||h.Contains("전월")||h.Contains("이전"))continue;
+                        int score=h.Contains("당월")?3:baseAliases.Any(a=>h==NormalizeHeader(a))?2:1;
+                        if(score>baseScore){vc=c;baseScore=score;}
+                    }
                     if(nc>0&&vc>0){header=r;nameCol=nc;birthCol=bc;baseCol=vc;break;}
                 }
                 if(header==0)continue;
