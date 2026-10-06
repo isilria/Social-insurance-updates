@@ -1,3 +1,8 @@
+﻿work_insurance_release_204\src\InsurancePayrollValidator_Ver2.0.cs(220,194): warning CS0649: 'InsurancePayrollValidator.MainForm.themeStatusLabel' �ʵ忡�� �Ҵ���� �����Ƿ� �׻� null �⺻���� ����մϴ�.
+PASS full Korean header with newline -> original reason -> Excel H column; review-save/reopen preserves reason; prior saved result fallback; blank reason never uses review message; separate site reasons
+PASS attached short payroll -> insurance parser -> screen model -> actual Excel: employment 23000, industrial 16000
+PASS ordinary/fixed-term first; short workers last; Korean order; school short included; school ordinary/public/teacher/other-site excluded; inherited short wage ignored
+PASS short negative/zero totals and settlements are not added twice; saved screen totals agree with output
 PASS payroll insurance-name matching: leave/return/year-end/termination/other, signed values, order, totals and no double counting
 PASS actual attachment parser, matched and insurance-only health totals
 PASS health positive/negative/zero/net-zero/public/explicit asymmetric employer
@@ -6,10 +11,32 @@ PASS parser -> model -> UI manual fund save/reload -> actual Excel worker output
 PASS actual teacher output health -51480 (not -102960), pension 81000
 PASS worker wage-base formulas preserved; pension 2000000 * template rate -19000 = 76000, not notice total 81000
 PASS same name/birth across sites preserves separate employer totals
-PASS short-term worker also preserves wage-base formulas and settlement-only inputs
+PASS short-term uses actual totals once and preserves formulas
 PASS existing manual correction/save/reload/history and original-sheet preservation regression
 PASS old saved result cannot silently reuse doubled/missing settlement totals
 PASS job editor: blank/replacement/clear/trim, save/reopen/general save, cancel, amounts/fund/completed-state preservation, audit, originals, actual submission E7
-PASS supplied pension layout 24 rows: E current wage -> submission K; formulas preserved
-PASS nonzero retro wage, zero current wage, current-only totals and separate retro settlement
-PASS assertions=177
+PASS assertions=285
+
+PASS: 독립 엑셀 작업 파일 생성
+PASS: 총괄표·메뉴별 탭과 복원 데이터 보관
+PASS: 총괄표를 첫 탭으로 배치
+PASS: 시안 대상자ID를 실제 작업 키로 교체
+PASS: 엑셀 개인부담 총액 = 화면 총액
+PASS: 엑셀 감면 후 납입 총액 = 화면 총액
+PASS: 모든 표시 탭 수식 오류 검사
+PASS: 저장→불러오기 총액 유지
+PASS: 동명이인·사업장·재원·직종·대체근로자 유지
+PASS: 엑셀 직종·재원 수정 복원
+PASS: 엑셀 보험료 수정 복원
+PASS: 확인 상태·메모 복원
+PASS: 감면 중복 차감 없이 복원
+PASS: 작업 메모 재저장
+PASS: 감면 메모 재저장
+PASS: 반환·추징 메모 재저장
+PASS: 반복 저장·불러오기 총액과 감면 유지
+PASS: 잘못된 파일 차단: duplicate
+PASS: 잘못된 파일 차단: missing
+PASS: 잘못된 파일 차단: identity
+PASS: 잘못된 파일 차단: invalidamount
+PASS: 잘못된 파일 차단: corrupt
+PASS: 기존 입력 파일 보존

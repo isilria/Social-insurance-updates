@@ -8,7 +8,7 @@ $validation = Join-Path $sourceRoot 'templates\validation_template_distribution.
 $icon = Join-Path $sourceRoot 'assets\ui_reference_app_icon.ico'
 $referenceIcon = Join-Path $sourceRoot 'assets\ui_reference_icon_transparent.png'
 $buildFolder = Join-Path $sourceRoot 'build'
-$outputName = 'SocialInsurance_Reconciliation_Helper_Ver2.0.3.exe'
+$outputName = 'SocialInsurance_Reconciliation_Helper_Ver2.0.4.exe'
 $output = Join-Path $buildFolder $outputName
 $compiler = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 
@@ -24,7 +24,11 @@ New-Item -ItemType Directory -Path $buildFolder -Force | Out-Null
     /resource:"$validation,InsurancePayrollValidator.ValidationTemplate.xlsx" `
     /resource:"$icon,InsurancePayrollValidator.AppIcon.ico" `
     /resource:"$referenceIcon,InsurancePayrollValidator.ReferenceIcon.png" `
-    $source (Join-Path $sourceRoot 'TestFeatures202.cs') (Join-Path $sourceRoot 'ManualContributions202.cs') (Join-Path $sourceRoot 'PrintQuality202.cs')
+    /resource:"$(Join-Path $sourceRoot 'templates/workspace_template.xlsx'),InsurancePayrollValidator.WorkspaceTemplate.xlsx" `
+    (Join-Path $sourceRoot 'WorkspaceWorkbook204.cs') (Join-Path $sourceRoot 'WorkspaceUi204.cs') `
+    $source (Join-Path $sourceRoot 'TestFeatures202.cs') (Join-Path $sourceRoot 'ManualContributions202.cs') (Join-Path $sourceRoot 'PrintQuality202.cs') (Join-Path $sourceRoot 'UpdateFixes203.cs') (Join-Path $sourceRoot 'AppUpdater203.cs') (Join-Path $sourceRoot 'AdjustmentReports203.cs')
 
 if ($LASTEXITCODE -ne 0) { throw "Build failed: $LASTEXITCODE" }
 Write-Host "Completed: $output"
+
+

@@ -22,8 +22,8 @@ using OfficeOpenXml.VBA;
 [assembly: AssemblyTitle("사회보험 재원별 대사 보조 도우미")]
 [assembly: AssemblyProduct("사회보험 재원별 대사 보조 도우미")]
 [assembly: AssemblyDescription("급여대장과 사회보험 부과자료의 재원별 대사 및 제출서 생성을 돕는 프로그램")]
-[assembly: AssemblyVersion("2.0.3.0")]
-[assembly: AssemblyFileVersion("2.0.3.0")]
+[assembly: AssemblyVersion("2.0.4.0")]
+[assembly: AssemblyFileVersion("2.0.4.0")]
 
 namespace InsurancePayrollValidator
 {
@@ -32,6 +32,9 @@ namespace InsurancePayrollValidator
         [STAThread]
         static void Main(string[] args)
         {
+#if SUBMISSION_TEST
+            if(String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SOCIAL_INSURANCE_TEST_HOME")))Environment.SetEnvironmentVariable("SOCIAL_INSURANCE_TEST_HOME",Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"살구아빠","사회보험_엑셀작업테스트_1006"));
+#endif
             AppDomain.CurrentDomain.AssemblyResolve += delegate(object sender, ResolveEventArgs e)
             {
                 if (new AssemblyName(e.Name).Name == "EPPlus")
@@ -67,6 +70,8 @@ namespace InsurancePayrollValidator
             if(args.Length>=3&&args[0]=="--manual-test"){try{using(MainForm test=new MainForm())test.ManualTest202(args[1],args[2]);}catch(Exception ex){File.WriteAllText(args[2]+".error.txt",ex.ToString(),Encoding.UTF8);Environment.ExitCode=1;}return;}
             if(args.Length>=3&&args[0]=="--review-fix-test"){try{using(MainForm test=new MainForm())test.ReviewFixTest202(args[1],args[2]);}catch(Exception ex){File.WriteAllText(args[2]+".error.txt",ex.ToString(),Encoding.UTF8);Environment.ExitCode=1;}return;}
             if(args.Length>=3&&args[0]=="--selftest202"){try{using(MainForm test=new MainForm())test.SelfTest202(args[1],args[2]);}catch(Exception ex){File.WriteAllText(args[2]+".error.txt",ex.ToString(),Encoding.UTF8);Environment.ExitCode=1;}return;}
+            if(args.Length>=3&&args[0]=="--workspace-test"){try{using(MainForm test=new MainForm())test.WorkbookTest204(args[1],args[2]);}catch(Exception ex){File.WriteAllText(Path.Combine(args[2],"error.txt"),ex.ToString(),Encoding.UTF8);Environment.ExitCode=1;}return;}
+            if(args.Length>=3&&args[0]=="--export-workspace"){try{using(MainForm test=new MainForm())test.ExportWorkspaceForTest204(args[1],args[2]);}catch(Exception ex){File.WriteAllText(args[2]+".error.txt",ex.ToString(),Encoding.UTF8);Environment.ExitCode=1;}return;}
             Application.ThreadException+=(s,e)=>MessageBox.Show("작업 중 오류가 발생했습니다.\r\n\r\n"+e.Exception.Message,"사회보험 대사 보조 도우미",MessageBoxButtons.OK,MessageBoxIcon.Error);
             if(args.Length>=2&&args[0]=="--screenshot-ui"){using(MainForm preview=new MainForm())preview.SavePreview(args[1]);return;}
             if(args.Length>=2&&args[0]=="--screenshot-ui-collapsed"){using(MainForm preview=new MainForm())preview.SaveCollapsedPreview(args[1]);return;}
@@ -124,40 +129,6 @@ namespace InsurancePayrollValidator
             if(Dark){Page=Color.FromArgb(18,22,31);Sidebar=Color.FromArgb(24,29,40);Card=Color.FromArgb(29,35,48);Surface=Color.FromArgb(35,42,57);Input=Color.FromArgb(38,46,62);Border=Color.FromArgb(65,76,98);Text=Color.FromArgb(239,243,253);Muted=Color.FromArgb(174,185,208);Header=Color.FromArgb(42,51,69);Grid=Color.FromArgb(67,78,101);}
             else{Page=Color.White;Sidebar=Color.FromArgb(248,250,255);Card=Color.White;Surface=Color.FromArgb(248,250,255);Input=Color.White;Border=Color.FromArgb(226,230,242);Text=Color.FromArgb(30,43,91);Muted=Color.FromArgb(102,111,142);Header=Color.FromArgb(249,250,254);Grid=Color.FromArgb(225,230,242);}
             if(Name=="회색"){Page=Color.FromArgb(65,69,76);Sidebar=Color.FromArgb(57,61,68);Card=Color.FromArgb(78,83,91);Surface=Color.FromArgb(85,90,99);Input=Color.FromArgb(91,96,105);Border=Color.FromArgb(112,118,128);Text=Color.FromArgb(244,246,249);Muted=Color.FromArgb(204,209,217);Header=Color.FromArgb(87,92,101);Grid=Color.FromArgb(116,122,132);}
-        }
-    }
-
-    static class AppUpdater
-    {
-        public const string ManifestUrl="https://raw.githubusercontent.com/isilria/Social-insurance-updates/main/latest.ini";
-        public static string CheckAndInstall(IWin32Window owner,Version current,bool interactive)
-        {
-            try
-            {
-                ServicePointManager.SecurityProtocol|=SecurityProtocolType.Tls12;
-                string manifest;
-                using(WebClient client=new WebClient()){client.Headers[HttpRequestHeader.UserAgent]="SocialInsuranceUpdater/"+current;client.Encoding=Encoding.UTF8;manifest=client.DownloadString(ManifestUrl);}
-                Dictionary<string,string> values=manifest.Replace("\r","").Split('\n').Select(x=>x.Trim()).Where(x=>x.Length>0&&!x.StartsWith("#")&&x.Contains("=")).Select(x=>x.Split(new[]{'='},2)).ToDictionary(x=>x[0].Trim(),x=>x[1].Trim(),StringComparer.OrdinalIgnoreCase);
-                Version latest;string versionText,url,sha;
-                if(!values.TryGetValue("version",out versionText)||!Version.TryParse(versionText,out latest)||!values.TryGetValue("url",out url)||!values.TryGetValue("sha256",out sha))throw new InvalidDataException("업데이트 정보 형식이 올바르지 않습니다.");
-                if(latest<=current)return "최신 여부  최신 버전입니다.";
-                string available="최신 여부  Ver. "+latest+" 업데이트 가능";
-                if(!interactive)return available;
-                string notes;values.TryGetValue("notes",out notes);
-                if(MessageBox.Show("새 버전 Ver. "+latest+"이 있습니다."+(String.IsNullOrWhiteSpace(notes)?"":"\r\n\r\n"+notes)+"\r\n\r\n지금 내려받아 실행할까요?","업데이트 확인",MessageBoxButtons.YesNo,MessageBoxIcon.Information)!=DialogResult.Yes)return available;
-                string temp=Path.Combine(Path.GetTempPath(),"SocialInsurance_"+latest+"_"+Guid.NewGuid().ToString("N")+".exe");
-                using(WebClient client=new WebClient()){client.Headers[HttpRequestHeader.UserAgent]="SocialInsuranceUpdater/"+current;client.DownloadFile(url,temp);}
-                string actual;using(SHA256 hash=SHA256.Create())using(FileStream stream=File.OpenRead(temp))actual=BitConverter.ToString(hash.ComputeHash(stream)).Replace("-","");
-                if(!String.Equals(actual,Regex.Replace(sha,"[^0-9A-Fa-f]","").ToUpperInvariant(),StringComparison.OrdinalIgnoreCase)){File.Delete(temp);throw new InvalidDataException("내려받은 업데이트 파일의 무결성 확인에 실패했습니다.");}
-                string fileName=Path.GetFileName(new Uri(url).LocalPath),folder=Path.GetDirectoryName(Application.ExecutablePath),target=Path.Combine(folder,fileName);
-                try{File.Copy(temp,target,true);File.Delete(temp);}catch{folder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"Downloads");Directory.CreateDirectory(folder);target=Path.Combine(folder,fileName);File.Copy(temp,target,true);File.Delete(temp);}
-                Process.Start(new ProcessStartInfo(target){UseShellExecute=true});Application.Exit();return "업데이트 실행 중";
-            }
-            catch(Exception ex)
-            {
-                if(interactive)MessageBox.Show("업데이트를 확인하지 못했습니다.\r\n\r\n"+ex.Message,"업데이트 확인",MessageBoxButtons.OK,MessageBoxIcon.Warning);
-                return "최신 여부  확인 실패";
-            }
         }
     }
 
@@ -249,8 +220,8 @@ namespace InsurancePayrollValidator
         TextBox output, submitOutput, validationResult, recipientCode, institutionName, managerName, phone, bankName, accountNumber, submissionRound, industrialRate; Label status, submitStatus,themeStatusLabel,updateStatusLabel;Button[] themeChoiceButtons;string temporaryResultPath;bool openResultAfterSave,automaticUpdateCheck=true;
         public MainForm()
         {
-            Dictionary<string,string> startupSettings=AppSettings.Load();UiTheme.Set(GetSetting(startupSettings,"Theme"));
-            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.3"; Icon=LoadAppIcon(); ClientSize=new Size(1280,650); MinimumSize=new Size(1180,650); StartPosition=FormStartPosition.CenterScreen; Font=new Font("맑은 고딕",9F); BackColor=UiTheme.Page;DoubleBuffered=true;
+            Dictionary<string,string> startupSettings=AppSettings.Load();UiTheme.Set(GetSetting(startupSettings,"Theme"));openResultAfterSave=GetSetting(startupSettings,"OpenResultAfterSave")=="1";automaticUpdateCheck=GetSetting(startupSettings,"AutomaticUpdateCheck")!="0";
+            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.4"; Icon=LoadAppIcon(); ClientSize=new Size(1320,760); MinimumSize=new Size(1180,650); StartPosition=FormStartPosition.CenterScreen; Font=new Font("맑은 고딕",9F); BackColor=UiTheme.Page;DoubleBuffered=true;
             sidebar=new Panel{Dock=DockStyle.Left,Width=205,BackColor=UiTheme.Sidebar,Padding=new Padding(12,15,12,12)};Controls.Add(sidebar);
             var brandImage=LoadReferenceIcon();var brandPanel=new Panel{Dock=DockStyle.Top,Height=90,BackColor=Color.Transparent};brandPanel.Controls.Add(new PictureBox{Image=brandImage==null?null:new Bitmap(brandImage,44,44),Location=new Point(4,8),Size=new Size(44,44),SizeMode=PictureBoxSizeMode.Zoom,BackColor=Color.Transparent});brandPanel.Controls.Add(new Label{Text="사회보험 대사\r\n보조 도우미",Location=new Point(55,8),Size=new Size(112,44),Font=new Font("맑은 고딕",9.5F,FontStyle.Bold),ForeColor=UiTheme.Accent,TextAlign=ContentAlignment.MiddleLeft,Tag="SidebarTitle"});sidebar.Controls.Add(brandPanel);
             navigationPanel=new BufferedFlowLayoutPanel{Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,AutoScroll=true,Padding=new Padding(0,8,0,52),BackColor=UiTheme.Sidebar};sidebar.Controls.Add(navigationPanel);navigationPanel.BringToFront();
@@ -266,8 +237,8 @@ namespace InsurancePayrollValidator
             AddPage("내부결재자료 생성",BuildPage(BuildApprovalScreen));
             AddPage("설정",BuildPage(BuildSettingsScreen));
             // 작업 관리 화면은 이번 수정에서 제거했습니다.
-            AddNav(navigationPanel,"파일 등록",false);AddNav(navigationPanel,"대사 결과",true);AddNav(navigationPanel,"총괄표",false);AddNav(navigationPanel,"개인별 내역",false);AddNav(navigationPanel,"반환 / 추징",false);AddNav(navigationPanel,"확인 필요",false);AddNav(navigationPanel,"감면 적용",false);AddNav(navigationPanel,"제출서 생성",false);AddNav(navigationPanel,"내부결재자료 생성",false);AddNav(navigationPanel,"설정",false);var sidebarFooter=new Panel{Width=165,Height=40,BackColor=Color.Transparent};sidebarVersionLabel=new Label{Text="Ver 2.0.3",Location=new Point(8,2),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarEmailLabel=new Label{Text="e-mail : isilria@ice.go.kr",Location=new Point(8,19),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarFooter.Controls.Add(sidebarVersionLabel);sidebarFooter.Controls.Add(sidebarEmailLabel);navigationPanel.Controls.Add(sidebarFooter);Action placeSidebarFooter=()=>{int used=navigationPanel.Controls.Cast<Control>().Where(x=>x!=sidebarFooter&&x.Visible).Sum(x=>x.Height+x.Margin.Vertical);int top=Math.Max(10,navigationPanel.ClientSize.Height-navigationPanel.Padding.Vertical-used-sidebarFooter.Height);if(sidebarFooter.Margin.Top!=top)sidebarFooter.Margin=new Padding(0,top,0,0);};navigationPanel.SizeChanged+=(s,e)=>placeSidebarFooter();navigationPanel.Layout+=(s,e)=>placeSidebarFooter();placeSidebarFooter();
-            LoadSavedSubmissionInfo();Initialize202();ApplyTheme(UiTheme.Name,false);FormClosing+=(s,e)=>{if(e.Cancel)return;SaveSubmissionInfo();CleanupTemporaryResult();};ShowPage("파일 등록");sidebar.BringToFront();
+            AddNav(navigationPanel,"파일 등록",false);AddNav(navigationPanel,"대사 결과",true);AddNav(navigationPanel,"총괄표",false);AddNav(navigationPanel,"개인별 내역",false);AddNav(navigationPanel,"반환 / 추징",false);AddNav(navigationPanel,"확인 필요",false);AddNav(navigationPanel,"감면 적용",false);AddNav(navigationPanel,"제출서 생성",false);AddNav(navigationPanel,"내부결재자료 생성",false);AddNav(navigationPanel,"설정",false);var sidebarFooter=new Panel{Width=165,Height=40,BackColor=Color.Transparent};sidebarVersionLabel=new Label{Text="Ver 2.0.4",Location=new Point(8,2),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarEmailLabel=new Label{Text="e-mail : isilria@ice.go.kr",Location=new Point(8,19),Size=new Size(157,14),Font=new Font("맑은 고딕",6.7F,FontStyle.Regular),ForeColor=UiTheme.Muted,BackColor=Color.Transparent,Tag="SidebarVersion"};sidebarFooter.Controls.Add(sidebarVersionLabel);sidebarFooter.Controls.Add(sidebarEmailLabel);sidebarFooter.Dock=DockStyle.Bottom;sidebar.Controls.Add(sidebarFooter);navigationPanel.Padding=new Padding(0,8,0,0);navigationPanel.BringToFront();
+            LoadSavedSubmissionInfo();InitializeSubmissionPersistence();InitializeFooterWarning();Initialize202();ApplyTheme(UiTheme.Name,false);FormClosing+=(s,e)=>{if(e.Cancel)return;if(!SaveSubmissionInfo()){e.Cancel=true;MessageBox.Show(this,"제출자 기본정보를 저장하지 못했습니다. 저장 상태를 확인한 후 다시 종료해 주세요.","기본정보 저장",MessageBoxButtons.OK,MessageBoxIcon.Warning);return;}CleanupTemporaryResult();};ShowPage("파일 등록");sidebar.BringToFront();var availableScreen=Screen.FromControl(this).WorkingArea;if(Width>availableScreen.Width||Height>availableScreen.Height)WindowState=FormWindowState.Maximized;
         }
         delegate void PageBuilder(Control page);
         Control BuildPage(PageBuilder builder){var page=new Panel{Dock=DockStyle.Fill,BackColor=UiTheme.Page,AutoScroll=true,Tag="ThemePage"};builder(page);return page;}
@@ -284,15 +255,21 @@ namespace InsurancePayrollValidator
         void BuildSettingsScreen(Control page)
         {
             page.Controls.Add(TitleLabel("설정",8,10,20F));
-            var update=(RoundedPanel)Card(8,61,1030,104,UiTheme.Card);update.Controls.Add(new Label{Text="업데이트 확인",Location=new Point(22,13),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});update.Controls.Add(new Label{Text="현재 버전  Ver. 2.0.3",Location=new Point(22,51),AutoSize=true,ForeColor=UiTheme.Accent,Font=new Font("맑은 고딕",9F,FontStyle.Bold),Tag="ThemeAccent"});updateStatusLabel=new Label{Text="최신 여부  확인 전",Location=new Point(225,51),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8.5F),Tag="ThemeMuted"};update.Controls.Add(updateStatusLabel);var check=OutputButton("업데이트 확인","refresh",555,36,155,38,UiTheme.Accent,false);check.Tag="ThemeAccentAction";check.Click+=(s,e)=>CheckForUpdates(true);update.Controls.Add(check);var auto=new CheckBox{Text="자동 확인",Checked=automaticUpdateCheck,Location=new Point(758,45),AutoSize=true,ForeColor=UiText,BackColor=Color.Transparent,Tag="ThemeText"};auto.CheckedChanged+=(s,e)=>{automaticUpdateCheck=auto.Checked;SaveSubmissionInfo();};update.Controls.Add(auto);page.Controls.Add(update);
+            var update=(RoundedPanel)Card(8,61,1030,104,UiTheme.Card);update.Controls.Add(new Label{Text="업데이트 확인",Location=new Point(22,13),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});update.Controls.Add(new Label{Text="현재 버전  Ver. 2.0.4",Location=new Point(22,51),AutoSize=true,ForeColor=UiTheme.Accent,Font=new Font("맑은 고딕",9F,FontStyle.Bold),Tag="ThemeAccent"});updateStatusLabel=new Label{Text="최신 여부  확인 전",Location=new Point(225,51),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8.5F),Tag="ThemeMuted"};update.Controls.Add(updateStatusLabel);var check=OutputButton("업데이트 확인","refresh",555,36,155,38,UiTheme.Accent,false);check.Tag="ThemeAccentAction";check.Click+=(s,e)=>CheckForUpdates(true);update.Controls.Add(check);var auto=new CheckBox{Text="자동 확인",Checked=automaticUpdateCheck,Location=new Point(758,45),AutoSize=true,ForeColor=UiText,BackColor=Color.Transparent,Tag="ThemeText"};auto.CheckedChanged+=(s,e)=>{automaticUpdateCheck=auto.Checked;SaveSubmissionInfo();};update.Controls.Add(auto);page.Controls.Add(update);
             var themeCard=(RoundedPanel)Card(8,179,1030,150,UiTheme.Card);themeCard.Controls.Add(new Label{Text="색상 테마 선택",Location=new Point(22,14),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});string[] names={"파랑","초록","빨강","살구","회색","검정"};Color[] accents={Color.FromArgb(48,63,220),Color.FromArgb(27,145,82),Color.FromArgb(205,62,62),Color.FromArgb(221,113,61),Color.FromArgb(91,103,121),Color.FromArgb(117,145,255)};themeChoiceButtons=new Button[6];for(int i=0;i<6;i++){string choice=names[i];var button=new ThemeChoiceButton{ThemeName=choice,Description="",Accent=accents[i],DarkPreview=choice=="검정",Location=new Point(18+i*168,52),Size=new Size(154,70),Active=UiTheme.Name==choice};button.Click+=(s,e)=>ApplyTheme(choice,true);themeChoiceButtons[i]=button;themeCard.Controls.Add(button);}page.Controls.Add(themeCard);
             var program=(RoundedPanel)Card(8,343,1030,92,UiTheme.Card);program.Controls.Add(new Label{Text="프로그램 설정",Location=new Point(22,14),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",11F,FontStyle.Bold),Tag="ThemeText"});var open=new CheckBox{Text="저장 후 결과 파일 자동 열기",Checked=openResultAfterSave,Location=new Point(24,53),AutoSize=true,ForeColor=UiText,BackColor=Color.Transparent,Tag="ThemeText"};open.CheckedChanged+=(s,e)=>{openResultAfterSave=open.Checked;SaveSubmissionInfo();};program.Controls.Add(open);page.Controls.Add(program);
         }
         void ApplyTheme(string name,bool persist)
         {
-            UiTheme.Set(name);BackColor=UiTheme.Page;if(contentHost!=null)contentHost.BackColor=UiTheme.Page;if(sidebar!=null){sidebar.BackColor=UiTheme.Sidebar;ApplySidebarTheme(sidebar);}if(sidebarVersionLabel!=null){sidebarVersionLabel.BackColor=Color.Transparent;sidebarVersionLabel.ForeColor=UiTheme.Muted;}if(sidebarEmailLabel!=null){sidebarEmailLabel.BackColor=Color.Transparent;sidebarEmailLabel.ForeColor=UiTheme.Muted;}if(navigationPanel!=null)navigationPanel.BackColor=UiTheme.Sidebar;foreach(Control page in pages.Values)ApplyThemeToControl(page);foreach(Button b in navigationButtons.Values)b.Invalidate();if(reconciliationSectionButton!=null)reconciliationSectionButton.Invalidate();if(themeChoiceButtons!=null)foreach(Button b in themeChoiceButtons){ThemeChoiceButton choice=b as ThemeChoiceButton;if(choice!=null){choice.Active=choice.ThemeName==UiTheme.Name;choice.Invalidate();}}if(themeStatusLabel!=null){themeStatusLabel.Text="현재 테마  ·  "+UiTheme.Name;themeStatusLabel.ForeColor=UiTheme.Accent;}ApplyPeriodThemeAccent();Invalidate(true);if(persist)SaveSubmissionInfo();
+            UiTheme.Set(name);BackColor=UiTheme.Page;if(contentHost!=null)contentHost.BackColor=UiTheme.Page;if(sidebar!=null){sidebar.BackColor=UiTheme.Sidebar;ApplySidebarTheme(sidebar);}if(sidebarVersionLabel!=null){sidebarVersionLabel.BackColor=Color.Transparent;sidebarVersionLabel.ForeColor=UiTheme.Muted;}if(sidebarEmailLabel!=null){sidebarEmailLabel.BackColor=Color.Transparent;sidebarEmailLabel.ForeColor=UiTheme.Muted;}if(navigationPanel!=null)navigationPanel.BackColor=UiTheme.Sidebar;foreach(Control page in pages.Values)ApplyThemeToControl(page);foreach(Button b in navigationButtons.Values)b.Invalidate();if(reconciliationSectionButton!=null)reconciliationSectionButton.Invalidate();if(themeChoiceButtons!=null)foreach(Button b in themeChoiceButtons){ThemeChoiceButton choice=b as ThemeChoiceButton;if(choice!=null){choice.Active=choice.ThemeName==UiTheme.Name;choice.Invalidate();}}if(themeStatusLabel!=null){themeStatusLabel.Text="현재 테마  ·  "+UiTheme.Name;themeStatusLabel.ForeColor=UiTheme.Accent;}ApplyPeriodThemeAccent();UpdateFooterWarningTheme();Invalidate(true);if(persist)SaveSubmissionInfo();
         }
-        void CheckForUpdates(bool interactive){string status=AppUpdater.CheckAndInstall(this,new Version(2,0,2),interactive);if(updateStatusLabel!=null)updateStatusLabel.Text=status;}
+        void CheckForUpdates(bool interactive){
+#if SUBMISSION_TEST
+            if(updateStatusLabel!=null)updateStatusLabel.Text="제출서 테스트판 · 업데이트 사용 안 함";
+#else
+            string status=AppUpdater.CheckAndInstall(this,AppUpdater.CurrentVersion,interactive);if(updateStatusLabel!=null)updateStatusLabel.Text=status;
+#endif
+        }
         void ApplyPeriodThemeAccent(){foreach(Label label in new[]{summaryPeriodLabel,individualPeriodLabel,adjustmentPeriodLabel,reviewPeriodLabel,discountPeriodLabel,submissionPeriodLabel,approvalPeriodLabel})if(label!=null){label.ForeColor=UiTheme.Accent;label.Invalidate();}}
         void ApplySidebarTheme(Control control){Panel panel=control as Panel;if(panel!=null)panel.BackColor=panel.Height<=1?UiTheme.Border:UiTheme.Sidebar;Label label=control as Label;if(label!=null){label.ForeColor=(label.Tag as string)=="SidebarVersion"?UiTheme.Muted:UiTheme.Accent;label.BackColor=Color.Transparent;}foreach(Control child in control.Controls)ApplySidebarTheme(child);control.Invalidate();}
         void ApplyThemeToControl(Control control)
@@ -337,7 +314,6 @@ namespace InsurancePayrollValidator
             output=new TextBox{Visible=false,Text=Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)};page.Controls.Add(output);
             page.Controls.Add(new Label{Text="●  ○  ○  ○",Location=new Point(485,458),AutoSize=true,ForeColor=Color.FromArgb(205,198,244),Font=new Font("맑은 고딕",7F)});
             var ready=Card(28,486,1005,67,Color.FromArgb(249,252,255));siteCountLabel=new Label{Text="▱  사업장 0개",Location=new Point(18,15),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",10F,FontStyle.Bold)};ready.Controls.Add(siteCountLabel);readinessLabel=new Label{Text="○  파일 등록 대기",Location=new Point(255,12),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",10F,FontStyle.Bold)};ready.Controls.Add(readinessLabel);readinessDetail=new Label{Text="분석할 파일을 등록해 주세요.",Location=new Point(277,36),AutoSize=true,ForeColor=UiMuted,Font=new Font("맑은 고딕",8F)};ready.Controls.Add(readinessDetail);runButton=ActionButton("▷  대사 시작",745,12,235,42,Color.FromArgb(181,184,201));runButton.Enabled=false;runButton.Click+=(s,e)=>Run();ready.Controls.Add(runButton);page.Controls.Add(ready);status=new Label{Text="",Visible=false};page.Controls.Add(status);
-            var homeNotice=(RoundedPanel)Card(28,563,1005,30,Color.FromArgb(255,249,249));homeNotice.BorderColor=Color.FromArgb(244,224,224);var warningText=new Label{Text="⚠  본 프로그램은 업무 효율성 향상을 위해 개인이 제작한 도구입니다. 사용 상황에 따라 결과값이 부정확할 수 있으니 보조용으로 사용하시고 결과 값을 꼭 확인하시기 바랍니다",Location=new Point(14,7),AutoSize=true,ForeColor=Color.FromArgb(126,32,32),Font=new Font("맑은 고딕",7.2F,FontStyle.Bold)};homeNotice.Controls.Add(warningText);int authorX=Math.Min(936,warningText.Right+4);var authorAt=new Label{Text="@",Location=new Point(authorX,7),AutoSize=true,ForeColor=Color.FromArgb(30,30,30),Font=new Font("맑은 고딕",7.2F,FontStyle.Bold)};homeNotice.Controls.Add(authorAt);homeNotice.Controls.Add(new Label{Text="살구아빠",Location=new Point(authorAt.Right,7),AutoSize=true,ForeColor=Color.FromArgb(222,130,84),Font=new Font("맑은 고딕",7.2F,FontStyle.Bold)});page.Controls.Add(homeNotice);
             foreach(string key in new[]{"급여대장 통합","건강보험","국민연금","고용보험","산재보험","단기기간제 근로자"}){boxes[key]=new TextBox{Visible=false};page.Controls.Add(boxes[key]);registeredFiles[key]=new List<string>();}
         }
         void ChooseMultipleFiles(){using(OpenFileDialog d=new OpenFileDialog{Filter="대사 자료 (*.xlsx;*.xlsm;*.xls;*.zip)|*.xlsx;*.xlsm;*.xls;*.zip|모든 파일 (*.*)|*.*",Multiselect=true})if(d.ShowDialog()==DialogResult.OK)AnalyzeRegisteredFiles(d.FileNames);}
@@ -426,6 +402,8 @@ namespace InsurancePayrollValidator
         void BuildSummaryScreen(Control page)
         {
             page.Controls.Add(TitleLabel("총괄표",8,10,20F));
+            var saveWorkbook=OutputButton("총괄 엑셀 저장","file",704,9,164,34,UiBlue,false);saveWorkbook.Tag="ThemeAccentAction";saveWorkbook.Click+=(s,e)=>Safe202(SaveWorkspace202);page.Controls.Add(saveWorkbook);
+            var openWorkbook=OutputButton("저장한 작업 열기","folder",878,9,160,34,UiBlue,false);openWorkbook.Tag="ThemeAccentAction";openWorkbook.Click+=(s,e)=>Safe202(OpenWorkspace202);page.Controls.Add(openWorkbook);
             string[] captions={"총 사업장 수","처리 완료 파일","총 근로자 수","대체근로자 수","확인 필요 항목"};string[] notes={"전체 등록 사업장","모든 필수 파일 완료","전체 사업장 합계","1개월 미만 근로자","추징/환급/분류필요"};string[] icons={"building","files","worker","short","warning"};Color[] colors={Color.FromArgb(102,78,238),UiGreen,Color.FromArgb(37,133,235),UiOrange,UiRed};summaryStatCards=new DashboardStatCard[5];for(int i=0;i<5;i++){summaryStatCards[i]=new DashboardStatCard{Location=new Point(8+i*206,59),Size=new Size(198,96),Caption=captions[i],Value="-",Note=notes[i],IconKind=icons[i],Accent=colors[i]};page.Controls.Add(summaryStatCards[i]);}
             var overview=(RoundedPanel)Card(8,168,1030,108,Color.White);overview.Radius=13;overview.BorderColor=Color.FromArgb(222,227,241);overview.Controls.Add(new Label{Text="고지 년월",Location=new Point(18,17),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",8.5F,FontStyle.Bold)});summaryPeriodLabel=new Label{Text="-",Location=new Point(18,49),AutoSize=true,ForeColor=Color.FromArgb(33,91,235),Font=new Font("맑은 고딕",18F,FontStyle.Bold)};overview.Controls.Add(summaryPeriodLabel);overview.Controls.Add(new Panel{Location=new Point(205,16),Size=new Size(1,76),BackColor=UiBorder});summaryPremiumTotals=new PremiumTotalsControl{Location=new Point(224,12),Size=new Size(558,84)};overview.Controls.Add(summaryPremiumTotals);overview.Controls.Add(new Panel{Location=new Point(794,16),Size=new Size(1,76),BackColor=UiBorder});overview.Controls.Add(new Label{Text="사업장 관리번호 선택",Location=new Point(814,16),AutoSize=true,ForeColor=UiText,Font=new Font("맑은 고딕",8.5F,FontStyle.Bold)});summarySiteSelector=new ModernSiteSelector{Location=new Point(812,45),Size=new Size(202,44)};summarySiteSelector.SelectedIndexChanged+=(s,e)=>{if(!summaryComboLoading)UpdateSummaryForSelectedSite();};overview.Controls.Add(summarySiteSelector);page.Controls.Add(overview);
             summaryTable=new SummaryTableControl{Location=new Point(8,288),Size=new Size(1030,306)};page.Controls.Add(summaryTable);
@@ -662,7 +640,20 @@ namespace InsurancePayrollValidator
         {
             Dictionary<string,string> s=AppSettings.Load();recipientCode.Text=GetSetting(s,"RecipientCode");institutionName.Text=GetSetting(s,"InstitutionName");managerName.Text=GetSetting(s,"ManagerName");phone.Text=GetSetting(s,"Phone");bankName.Text=GetSetting(s,"BankName");accountNumber.Text=GetSetting(s,"AccountNumber");submissionRound.Text=GetSetting(s,"Round");string rate=GetSetting(s,"IndustrialRate"),folder=GetSetting(s,"OutputFolder"),theme=GetSetting(s,"Theme");openResultAfterSave=GetSetting(s,"OpenResultAfterSave")=="1";automaticUpdateCheck=GetSetting(s,"AutomaticUpdateCheck")!="0";if(!String.IsNullOrWhiteSpace(theme))UiTheme.Set(theme);industrialRate.Text=String.IsNullOrWhiteSpace(rate)?"0.008":rate;if(!String.IsNullOrWhiteSpace(folder)&&Directory.Exists(folder)){submitOutput.Text=folder;output.Text=folder;}if(submissionRoundSelector!=null){int index=submissionRoundSelector.Items.FindIndex(x=>x==submissionRound.Text||x.StartsWith(submissionRound.Text));submissionRoundSelector.SelectedIndex=index>=0?index:0;}
         }
-        void SaveSubmissionInfo(){if(recipientCode==null)return;AppSettings.Save(new Dictionary<string,string>{{"RecipientCode",recipientCode.Text},{"InstitutionName",institutionName.Text},{"ManagerName",managerName.Text},{"Phone",phone.Text},{"BankName",bankName.Text},{"AccountNumber",accountNumber.Text},{"Round",submissionRound.Text},{"IndustrialRate",industrialRate.Text},{"OutputFolder",submitOutput==null?"":submitOutput.Text},{"Theme",UiTheme.Name},{"OpenResultAfterSave",openResultAfterSave?"1":"0"},{"AutomaticUpdateCheck",automaticUpdateCheck?"1":"0"}});}
+        bool SaveSubmissionInfo()
+        {
+            if(!submissionSettingsReady||recipientCode==null)return true;
+            try{
+                var values=AppSettings.Load();
+                string[] keys={"RecipientCode","InstitutionName","ManagerName","Phone","BankName","AccountNumber","Round","IndustrialRate","OutputFolder"};
+                TextBox[] fields={recipientCode,institutionName,managerName,phone,bankName,accountNumber,submissionRound,industrialRate,submitOutput};
+                for(int i=0;i<keys.Length;i++)values[keys[i]]=fields[i]==null?"":fields[i].Text;
+                values["Theme"]=UiTheme.Name;values["OpenResultAfterSave"]=openResultAfterSave?"1":"0";values["AutomaticUpdateCheck"]=automaticUpdateCheck?"1":"0";
+                AppSettings.Save(values);
+                if(submissionSaveStatus!=null){submissionSaveStatus.Text="기본정보 자동 저장됨";submissionSaveStatus.ForeColor=UiMuted;}
+                return true;
+            }catch(Exception){if(submissionSaveStatus!=null){submissionSaveStatus.Text="기본정보 저장 실패 · 저장 폴더 권한을 확인해 주세요";submissionSaveStatus.ForeColor=UiRed;}return false;}
+        }
         static string GetSetting(Dictionary<string,string> values,string key){string value;return values.TryGetValue(key,out value)?value:"";}
         void AddFileRow(Control parent,string key,string label,int y)
         {
@@ -1281,30 +1272,14 @@ namespace InsurancePayrollValidator
         static void Ascii(Stream stream,string text){byte[] bytes=Encoding.ASCII.GetBytes(text);stream.Write(bytes,0,bytes.Length);}
     }
 
-    static class AdjustmentReportGenerator
+    static partial class AdjustmentReportGenerator
     {
         static readonly Color Navy=Color.FromArgb(31,51,125),Blue=Color.FromArgb(43,102,224),Red=Color.FromArgb(229,55,55),Green=Color.FromArgb(22,139,69),Grid=Color.FromArgb(218,225,241);
-        public static void CreateExcel(string path,List<IndividualRowData> rows,string mode,int year,int month,string site)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));using(ExcelPackage package=new ExcelPackage()){ExcelWorksheet ws=package.Workbook.Worksheets.Add(mode=="전체"?"반환추징내역":mode+"내역");ws.Cells[1,1].Value="사회보험료 "+(mode=="전체"?"반환·추징":mode)+" 대상 내역";ws.Cells[1,1,1,20].Merge=true;ws.Cells[1,1].Style.Font.Size=18;ws.Cells[1,1].Style.Font.Bold=true;ws.Cells[1,1].Style.Font.Color.SetColor(Navy);ws.Cells[1,1].Style.HorizontalAlignment=ExcelHorizontalAlignment.Left;ws.Row(1).Height=31;ws.Cells[2,1].Value="고지년월";ws.Cells[2,2].Value=year+"년 "+month+"월";ws.Cells[2,4].Value="사업장";ws.Cells[2,5].Value=site;ws.Cells[2,9].Value="생성일";ws.Cells[2,10].Value=DateTime.Now.ToString("yyyy-MM-dd");ws.Cells[3,1].Value="※ 본 자료는 반환 또는 추징 대상자 확인용 보조자료입니다. 원자료와 최종 금액을 반드시 확인해 주세요.";ws.Cells[3,1,3,20].Merge=true;ws.Cells[3,1].Style.Font.Color.SetColor(Color.FromArgb(126,32,32));
-                string[] headers={"No.","구분","사업장 관리번호","재원","이름","주민/사번","직종명","건강 고지","건강 급여","건강 차액","국민 고지","국민 급여","국민 차액","고용 고지","고용 급여","고용 차액","산재 고지","산재 급여","산재 차액","조정 금액"};for(int c=0;c<headers.Length;c++)ws.Cells[5,c+1].Value=headers[c];using(ExcelRange h=ws.Cells[5,1,5,20]){h.Style.Font.Bold=true;h.Style.Font.Color.SetColor(Color.White);h.Style.Fill.PatternType=ExcelFillStyle.Solid;h.Style.Fill.BackgroundColor.SetColor(Navy);h.Style.HorizontalAlignment=ExcelHorizontalAlignment.Center;h.Style.VerticalAlignment=ExcelVerticalAlignment.Center;}ws.Row(5).Height=27;
-                int r=6,index=1;foreach(IndividualRowData d in rows){string kind=Kind(d,mode);decimal[] values={d.HealthNotice,d.HealthPayroll,d.HealthDifference,d.PensionNotice,d.PensionPayroll,d.PensionDifference,d.EmploymentNotice,d.EmploymentPayroll,d.EmploymentDifference,d.IndustrialNotice,d.IndustrialPayroll,d.IndustrialDifference};object[] fixedValues={index++,kind,d.Site,d.Fund,d.Name,MaskBirth(d.Birth),d.Job};for(int c=0;c<fixedValues.Length;c++)ws.Cells[r,c+1].Value=fixedValues[c];for(int c=0;c<values.Length;c++){ws.Cells[r,8+c].Value=values[c];ws.Cells[r,8+c].Style.Numberformat.Format="#,##0;[Red]-#,##0;0";if(c%3==2)ws.Cells[r,8+c].Style.Font.Color.SetColor(values[c]>.5m?Red:values[c]<-.5m?Blue:Green);}ws.Cells[r,20].Value=Amount(d,mode);ws.Cells[r,20].Style.Numberformat.Format="#,##0";ws.Cells[r,20].Style.Font.Bold=true;ws.Cells[r,20].Style.Font.Color.SetColor(kind=="반환"?Blue:kind=="추징"?Red:Color.FromArgb(139,76,204));if(r%2==1){ws.Cells[r,1,r,20].Style.Fill.PatternType=ExcelFillStyle.Solid;ws.Cells[r,1,r,20].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(248,250,255));}r++;}
-                int last=Math.Max(6,r-1);using(ExcelRange body=ws.Cells[5,1,last,20]){body.Style.Border.Top.Style=body.Style.Border.Bottom.Style=body.Style.Border.Left.Style=body.Style.Border.Right.Style=ExcelBorderStyle.Thin;body.Style.Border.Top.Color.SetColor(Grid);body.Style.Border.Bottom.Color.SetColor(Grid);body.Style.Border.Left.Color.SetColor(Grid);body.Style.Border.Right.Color.SetColor(Grid);body.Style.VerticalAlignment=ExcelVerticalAlignment.Center;body.Style.HorizontalAlignment=ExcelHorizontalAlignment.Center;}ws.View.FreezePanes(6,8);ws.Column(1).Width=6;ws.Column(2).Width=12;ws.Column(3).Width=18;ws.Column(4).Width=14;ws.Column(5).Width=12;ws.Column(6).Width=17;ws.Column(7).Width=24;for(int c=8;c<=20;c++)ws.Column(c).Width=13;ws.PrinterSettings.Orientation=eOrientation.Landscape;ws.PrinterSettings.FitToPage=true;ws.PrinterSettings.FitToWidth=1;ws.PrinterSettings.FitToHeight=0;ws.PrinterSettings.RepeatRows=new ExcelAddress("5:5");package.SaveAs(new FileInfo(path));}
-        }
         public static void CreatePdf(string path,List<IndividualRowData> rows,string mode,int year,int month,string site)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));const int perPage=18;var pages=new List<byte[]>();int totalCount=rows.Count,pageCount=Math.Max(1,(int)Math.Ceiling(totalCount/(double)perPage));for(int page=0;page<pageCount;page++){List<IndividualRowData> slice=rows.Skip(page*perPage).Take(perPage).ToList();using(Bitmap bmp=PrintQuality202.CreateBitmap(1754,1240))using(Graphics g=Graphics.FromImage(bmp)){g.SmoothingMode=SmoothingMode.AntiAlias;g.TextRenderingHint=System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;g.Clear(Color.White);g.ScaleTransform(4F,4F);DrawPdfPage(g,slice,mode,year,month,site,page+1,pageCount,page*perPage,totalCount);using(MemoryStream image=new MemoryStream()){PrintQuality202.WriteLossless(bmp,image);pages.Add(image.ToArray());}}}WriteImagePdf(path,pages,7016,4960);
         }
-        static void DrawPdfPage(Graphics g,List<IndividualRowData> rows,string mode,int year,int month,string site,int page,int pages,int offset,int totalCount)
-        {
-            using(Font title=new Font("맑은 고딕",27F,FontStyle.Bold),subtitle=new Font("맑은 고딕",11F),meta=new Font("맑은 고딕",12F,FontStyle.Bold),head=new Font("맑은 고딕",10F,FontStyle.Bold),cell=new Font("맑은 고딕",9F,FontStyle.Bold),small=new Font("맑은 고딕",8.5F),foot=new Font("맑은 고딕",8.5F))
-            {
-                string reportMode=mode=="전체"?"반환·추징":mode;Draw(g,"사회보험료 "+reportMode+" 대상 내역",title,Navy,new RectangleF(48,35,1200,45),StringAlignment.Near);Draw(g,"급여 공제액과 보험료 고지액의 차이를 기준으로 작성한 업무 보조자료",subtitle,Color.FromArgb(90,101,137),new RectangleF(50,83,1200,30),StringAlignment.Near);using(SolidBrush b=new SolidBrush(Color.FromArgb(247,249,255)))g.FillRoundedRectangle(b,new RectangleF(48,124,1658,72),12);Draw(g,"고지년월  "+year+"년 "+month+"월",meta,Navy,new RectangleF(70,136,330,46),StringAlignment.Near);Draw(g,"사업장  "+site,meta,Navy,new RectangleF(410,136,800,46),StringAlignment.Near);Draw(g,"대상 "+totalCount+"명",meta,mode=="반환"?Blue:mode=="추징"?Red:Navy,new RectangleF(1420,136,250,46),StringAlignment.Far);
-                string[] heads={"No.","구분","재원","이름","주민/사번","직종명","건강 차액","국민 차액","고용 차액","산재 차액","조정 금액"};int[] widths={48,88,108,105,137,230,160,160,160,160,172};int x=48,y=220,headerH=58,rowH=45;using(SolidBrush hb=new SolidBrush(Navy))g.FillRectangle(hb,x,y,widths.Sum(),headerH);for(int c=0;c<heads.Length;c++){Draw(g,heads[c],head,Color.White,new RectangleF(x,y,widths[c],headerH),StringAlignment.Center);x+=widths[c];}y+=headerH;for(int r=0;r<rows.Count;r++){IndividualRowData d=rows[r];x=48;if(r%2==1)using(SolidBrush alt=new SolidBrush(Color.FromArgb(249,251,255)))g.FillRectangle(alt,x,y,widths.Sum(),rowH);string kind=Kind(d,mode);string[] texts={""+(offset+r+1),kind,d.Fund,d.Name,MaskBirth(d.Birth),d.Job,Signed(d.HealthDifference),Signed(d.PensionDifference),Signed(d.EmploymentDifference),Signed(d.IndustrialDifference),UiDrawing.Money(Amount(d,mode))};for(int c=0;c<texts.Length;c++){Color ink=c>=6&&c<=9?DiffColor(c==6?d.HealthDifference:c==7?d.PensionDifference:c==8?d.EmploymentDifference:d.IndustrialDifference):c==1?kind=="반환"?Blue:kind=="추징"?Red:Color.FromArgb(139,76,204):Navy;Draw(g,texts[c],c==5?small:cell,ink,new RectangleF(x+3,y,widths[c]-6,rowH),StringAlignment.Center);using(Pen p=new Pen(Grid))g.DrawRectangle(p,x,y,widths[c],rowH);x+=widths[c];}y+=rowH;}
-                using(Pen p=new Pen(Grid))g.DrawRectangle(p,48,220,widths.Sum(),headerH+rows.Count*rowH);using(SolidBrush notice=new SolidBrush(Color.FromArgb(255,248,248)))g.FillRoundedRectangle(notice,new RectangleF(48,1100,1658,55),10);Draw(g,"※ 본 자료는 업무 확인용 보조자료입니다. 반환·추징 처리 전 원자료와 최종 금액을 반드시 확인해 주세요.",small,Color.FromArgb(126,32,32),new RectangleF(70,1105,1550,45),StringAlignment.Near);Draw(g,"생성일 "+DateTime.Now.ToString("yyyy-MM-dd HH:mm")+"   |   "+page+" / "+pages,foot,Color.FromArgb(105,114,143),new RectangleF(48,1173,1658,28),StringAlignment.Far);
-            }
-        }
-        static void Draw(Graphics g,string text,Font font,Color color,RectangleF rect,StringAlignment align){using(SolidBrush b=new SolidBrush(color))using(StringFormat f=new StringFormat{Alignment=align,LineAlignment=StringAlignment.Center,Trimming=StringTrimming.EllipsisCharacter,FormatFlags=StringFormatFlags.NoWrap})g.DrawString(text??"",font,b,rect,f);}static Color DiffColor(decimal d){return d>.5m?Red:d<-.5m?Blue:Green;}static string Signed(decimal value){if(Math.Abs(value)<=.5m)return "0";return value>0?"+"+UiDrawing.Money(value):UiDrawing.Money(value);}static string MaskBirth(string value){string digits=Regex.Replace(value??"","[^0-9]","");return digits.Length>=7?digits.Substring(0,6)+"-"+digits.Substring(6,1)+"******":value??"";}static bool Refund(IndividualRowData d){return d.Fund!="분류필요"&&(d.HealthDifference<-.5m||d.PensionDifference<-.5m||d.EmploymentDifference<-.5m||d.IndustrialDifference<-.5m);}static bool Collection(IndividualRowData d){return d.Fund!="분류필요"&&(d.HealthDifference>.5m||d.PensionDifference>.5m||d.EmploymentDifference>.5m||d.IndustrialDifference>.5m);}static string Kind(IndividualRowData d,string mode){if(mode=="반환"||mode=="추징")return mode;return Refund(d)&&Collection(d)?"반환·추징":Refund(d)?"반환":"추징";}static decimal Amount(IndividualRowData d,string mode){decimal[] diffs={d.HealthDifference,d.PensionDifference,d.EmploymentDifference,d.IndustrialDifference};if(mode=="반환")return diffs.Where(x=>x<-.5m).Sum(x=>Math.Abs(x));if(mode=="추징")return diffs.Where(x=>x>.5m).Sum();return diffs.Where(x=>Math.Abs(x)>.5m).Sum(x=>Math.Abs(x));}
+        static void Draw(Graphics g,string text,Font font,Color color,RectangleF rect,StringAlignment align){using(SolidBrush b=new SolidBrush(color))using(StringFormat f=new StringFormat{Alignment=align,LineAlignment=StringAlignment.Center,Trimming=StringTrimming.EllipsisCharacter,FormatFlags=StringFormatFlags.NoWrap})g.DrawString(text??"",font,b,rect,f);}static Color DiffColor(decimal d){return d>.5m?Red:d<-.5m?Blue:Green;}static string Signed(decimal value){if(Math.Abs(value)<=.5m)return "0";return value>0?"+"+UiDrawing.Money(value):UiDrawing.Money(value);}static string MaskBirth(string value){string digits=Regex.Replace(value??"","[^0-9]","");return digits.Length>=7?digits.Substring(0,6)+"-"+digits.Substring(6,1)+"******":value??"";}static bool Refund(IndividualRowData d){return d.Fund!="분류필요"&&(d.HealthDifference<-.5m||d.PensionDifference<-.5m||d.EmploymentDifference<-.5m||d.IndustrialDifference<-.5m);}static bool Collection(IndividualRowData d){return d.Fund!="분류필요"&&(d.HealthDifference>.5m||d.PensionDifference>.5m||d.EmploymentDifference>.5m||d.IndustrialDifference>.5m);}static string Kind(IndividualRowData d,string mode){if(mode=="반환"||mode=="추징")return mode;return Refund(d)&&Collection(d)?"반환·추징":Refund(d)?"반환":"추징";}static decimal Amount(IndividualRowData d,string mode){decimal[] diffs={d.HealthDifference,d.PensionDifference,d.EmploymentDifference};if(mode=="반환")return diffs.Where(x=>x<-.5m).Sum(x=>Math.Abs(x));if(mode=="추징")return diffs.Where(x=>x>.5m).Sum();return diffs.Where(x=>Math.Abs(x)>.5m).Sum(x=>Math.Abs(x));}
         static void WriteImagePdf(string path,List<byte[]> images,int width,int height)
         {
             int objectCount=2+images.Count*3;long[] offsets=new long[objectCount+1];using(FileStream stream=new FileStream(path,FileMode.Create,FileAccess.Write)){Ascii(stream,"%PDF-1.4\n%");stream.Write(new byte[]{0xE2,0xE3,0xCF,0xD3},0,4);Ascii(stream,"\n");Action<int,string> writeObject=(number,body)=>{offsets[number]=stream.Position;Ascii(stream,number+" 0 obj\n"+body+"\nendobj\n");};writeObject(1,"<< /Type /Catalog /Pages 2 0 R >>");string kids=String.Join(" ",Enumerable.Range(0,images.Count).Select(i=>(3+i*3)+" 0 R"));writeObject(2,"<< /Type /Pages /Kids ["+kids+"] /Count "+images.Count+" >>");for(int i=0;i<images.Count;i++){int page=3+i*3,image=page+1,content=page+2;writeObject(page,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /XObject << /Im0 "+image+" 0 R >> >> /Contents "+content+" 0 R >>");offsets[image]=stream.Position;Ascii(stream,image+" 0 obj\n<< /Type /XObject /Subtype /Image /Width "+width+" /Height "+height+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Interpolate false /Filter /FlateDecode /Length "+images[i].Length+" >>\nstream\n");stream.Write(images[i],0,images[i].Length);Ascii(stream,"\nendstream\nendobj\n");string draw="q\n842 0 0 595 0 0 cm\n/Im0 Do\nQ\n";writeObject(content,"<< /Length "+Encoding.ASCII.GetByteCount(draw)+" >>\nstream\n"+draw+"endstream");}long xref=stream.Position;Ascii(stream,"xref\n0 "+(objectCount+1)+"\n0000000000 65535 f \n");for(int i=1;i<=objectCount;i++)Ascii(stream,offsets[i].ToString("0000000000",CultureInfo.InvariantCulture)+" 00000 n \n");Ascii(stream,"trailer\n<< /Size "+(objectCount+1)+" /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF");}
@@ -1431,7 +1406,7 @@ namespace InsurancePayrollValidator
     {
         static string SettingsPath{get{return TestStore202.FilePath("settings.ini");}}
         public static Dictionary<string,string> Load(){var result=new Dictionary<string,string>();try{string path=SettingsPath;if(!File.Exists(path)&&String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SOCIAL_INSURANCE_TEST_HOME")))path=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"살구아빠","4대보험급여검증기","settings.ini");if(!File.Exists(path))return result;foreach(string line in File.ReadAllLines(path,Encoding.UTF8)){int p=line.IndexOf('=');if(p<=0)continue;try{result[line.Substring(0,p)]=Encoding.UTF8.GetString(Convert.FromBase64String(line.Substring(p+1)));}catch{}}}catch{}return result;}
-        public static void Save(Dictionary<string,string> values){try{File.WriteAllLines(SettingsPath,values.Select(x=>x.Key+"="+Convert.ToBase64String(Encoding.UTF8.GetBytes(x.Value??""))).ToArray(),Encoding.UTF8);}catch{}}
+        public static void Save(Dictionary<string,string> values){string path=SettingsPath,temp=path+"."+Guid.NewGuid().ToString("N")+".tmp";try{File.WriteAllLines(temp,values.Select(x=>x.Key+"="+Convert.ToBase64String(Encoding.UTF8.GetBytes(x.Value??""))).ToArray(),Encoding.UTF8);if(File.Exists(path))File.Replace(temp,path,null);else File.Move(temp,path);}finally{if(File.Exists(temp))File.Delete(temp);}}
     }
 
     static class Processor
@@ -2553,10 +2528,10 @@ End Sub
         }
         static void WriteUiIndividualSheet(ExcelWorksheet ws,List<ResultRow> rows,BillingPeriod period)
         {
-            string[] headers={"사업장관리번호","재원","이름","생년월일","직종명","대사결과","건강고지","건강급여","건강차액","국민고지","국민급여","국민차액","고용고지","고용급여","고용차액","산재고지","산재급여","산재차액","연도","월","확인사유","건강개인","건강기관","장기요양개인","장기요양기관","국민개인","국민기관","고용개인","고용기관","산재개인","산재기관","건강차액분리","장기요양차액분리","대체근로자","요약기여유효"};WriteHeader(ws,headers);string[] settlementHeaders={"건강기관정산(포함액)","요양기관정산(포함액)","국민기관정산(포함액)","고용기관정산(포함액)","산재기관정산(포함액)"};for(int c=0;c<settlementHeaders.Length;c++)ws.Cells[1,36+c].Value=settlementHeaders[c];int row=2;
+            string[] headers={"사업장관리번호","재원","이름","생년월일","직종명","대사결과","건강고지","건강급여","건강차액","국민고지","국민급여","국민차액","고용고지","고용급여","고용차액","산재고지","산재급여","산재차액","연도","월","확인사유","건강개인","건강기관","장기요양개인","장기요양기관","국민개인","국민기관","고용개인","고용기관","산재개인","산재기관","건강차액분리","장기요양차액분리","대체근로자","요약기여유효"};WriteHeader(ws,headers);string[] settlementHeaders={"건강기관정산(포함액)","요양기관정산(포함액)","국민기관정산(포함액)","고용기관정산(포함액)","산재기관정산(포함액)"};for(int c=0;c<settlementHeaders.Length;c++)ws.Cells[1,36+c].Value=settlementHeaders[c];ws.Cells[1,41].Value="기간제 근무 사유(원근로자 현황)";int row=2;
             foreach(var site in rows.Where(x=>!IsMissingWorkplace(x.WorkplaceNumber)).GroupBy(x=>x.WorkplaceNumber).OrderBy(x=>x.Key))foreach(var person in site.GroupBy(ResultIdentityKey).OrderBy(x=>UiFundOrder(UiFundName(x.First().Fund))).ThenBy(x=>x.First().Name))
             {
-                ResultRow first=person.First(),h=CombineInsurance(person,"건강보험"),p=CombineInsurance(person,"국민연금"),e=CombineInsurance(person,"고용보험"),ind=CombineInsurance(person,"산재보험");decimal personHp=h.ChargeHealth+h.SettlementPersonalHealth,personLp=h.ChargeLongTerm+h.SettlementPersonalLongTerm,personHe=h.EmployerHealth+h.SettlementEmployerHealth,personLe=h.EmployerLongTerm+h.SettlementEmployerLongTerm,payrollHp=h.DeductionHealth+h.DeductionSettlementHealth,payrollLp=h.DeductionLongTerm+h.DeductionSettlementLongTerm;if(personHp==0&&personLp==0&&h.Charge!=0){personHp=h.Charge;payrollHp=h.Deduction;}if(personHe==0&&personLe==0&&h.Employer!=0)personHe=h.Employer;decimal healthNotice=personHp+personLp,healthPayroll=payrollHp+payrollLp,pensionNotice=p.Charge,pensionPayroll=p.Deduction,employmentNotice=e.Charge,employmentPayroll=e.Deduction,industrialNotice=ind.Employer,industrialPayroll=industrialNotice;decimal[] differences={healthNotice-healthPayroll,pensionNotice-pensionPayroll,employmentNotice-employmentPayroll};bool positive=differences.Any(x=>x>.5m),negative=differences.Any(x=>x<-.5m),classified=first.Fund!="분류필요",unusual=person.Any(x=>x.Status!="정상"&&x.Status!="부과확인"&&x.Status!="추납"&&x.Status!="환급"),shortTerm=first.Fund.Contains("일용")||(!String.IsNullOrWhiteSpace(first.Source)&&first.Source.Contains("단기기간제 근로자"))||(!String.IsNullOrWhiteSpace(first.Reason)&&Regex.IsMatch(first.Reason,"대체|단기"));string status=!classified||unusual||positive&&negative?"확인 필요":positive?"추징 필요":negative?"환급 필요":"정상";string reason=!classified?"재원 분류 필요":positive&&negative?"보험별 추징·환급 혼재":String.Join(", ",person.Select(x=>x.Status).Where(x=>x!="정상"&&x!="부과확인").Distinct());object[] values={site.Key,UiIndividualFundName(first.Fund),first.Name,first.Birth,first.Job,status,healthNotice,healthPayroll,differences[0],pensionNotice,pensionPayroll,differences[1],employmentNotice,employmentPayroll,differences[2],industrialNotice,industrialPayroll,0,period.Year,period.Month,reason,personHp,personHe,personLp,personLe,pensionNotice,p.Employer,employmentNotice,e.Employer,ind.Charge,ind.Employer,personHp-payrollHp,personLp-payrollLp,shortTerm?1:0,1,h.SettlementEmployerHealth,h.SettlementEmployerLongTerm,p.SettlementEmployer,e.SettlementEmployer,ind.SettlementEmployer};for(int c=0;c<values.Length;c++)ws.Cells[row,c+1].Value=values[c];row++;
+                ResultRow first=person.First(),h=CombineInsurance(person,"건강보험"),p=CombineInsurance(person,"국민연금"),e=CombineInsurance(person,"고용보험"),ind=CombineInsurance(person,"산재보험");decimal personHp=h.ChargeHealth+h.SettlementPersonalHealth,personLp=h.ChargeLongTerm+h.SettlementPersonalLongTerm,personHe=h.EmployerHealth+h.SettlementEmployerHealth,personLe=h.EmployerLongTerm+h.SettlementEmployerLongTerm,payrollHp=h.DeductionHealth+h.DeductionSettlementHealth,payrollLp=h.DeductionLongTerm+h.DeductionSettlementLongTerm;if(personHp==0&&personLp==0&&h.Charge!=0){personHp=h.Charge;payrollHp=h.Deduction;}if(personHe==0&&personLe==0&&h.Employer!=0)personHe=h.Employer;decimal healthNotice=personHp+personLp,healthPayroll=payrollHp+payrollLp,pensionNotice=p.Charge,pensionPayroll=p.Deduction,employmentNotice=e.Charge,employmentPayroll=e.Deduction,industrialNotice=ind.Employer,industrialPayroll=industrialNotice;decimal[] differences={healthNotice-healthPayroll,pensionNotice-pensionPayroll,employmentNotice-employmentPayroll};bool positive=differences.Any(x=>x>.5m),negative=differences.Any(x=>x<-.5m),classified=first.Fund!="분류필요",unusual=person.Any(x=>x.Status!="정상"&&x.Status!="부과확인"&&x.Status!="추납"&&x.Status!="환급"),shortTerm=first.Fund.Contains("일용")||(!String.IsNullOrWhiteSpace(first.Source)&&first.Source.Contains("단기기간제 근로자"))||(!String.IsNullOrWhiteSpace(first.Reason)&&Regex.IsMatch(first.Reason,"대체|단기"));string status=!classified||unusual||positive&&negative?"확인 필요":positive?"추징 필요":negative?"환급 필요":"정상";string reason=!classified?"재원 분류 필요":positive&&negative?"보험별 추징·환급 혼재":String.Join(", ",person.Select(x=>x.Status).Where(x=>x!="정상"&&x!="부과확인").Distinct());object[] values={site.Key,UiIndividualFundName(first.Fund),first.Name,first.Birth,first.Job,status,healthNotice,healthPayroll,differences[0],pensionNotice,pensionPayroll,differences[1],employmentNotice,employmentPayroll,differences[2],industrialNotice,industrialPayroll,0,period.Year,period.Month,reason,personHp,personHe,personLp,personLe,pensionNotice,p.Employer,employmentNotice,e.Employer,ind.Charge,ind.Employer,personHp-payrollHp,personLp-payrollLp,shortTerm?1:0,1,h.SettlementEmployerHealth,h.SettlementEmployerLongTerm,p.SettlementEmployer,e.SettlementEmployer,ind.SettlementEmployer,first.Reason};for(int c=0;c<values.Length;c++)ws.Cells[row,c+1].Value=values[c];row++;
             }
             Finish(ws,headers.Length,Math.Max(1,row-1));if(row>2)ws.Cells[2,7,row-1,33].Style.Numberformat.Format="#,##0;[Red]-#,##0";
         }
@@ -2726,6 +2701,7 @@ End Sub
                     healthBases.TryGetValue(key,out item.HealthBase);pensionBases.TryGetValue(key,out item.PensionBase);employmentBases.TryGetValue(key,out item.EmploymentBase);industrialBases.TryGetValue(key,out item.IndustrialBase);targets.Add(item);
                 }
                 if(targets.Count==0){string found=String.Join(", ",Enumerable.Range(2,Math.Max(0,last-1)).Select(r=>CellText(source,people,r,1)).Where(x=>!String.IsNullOrWhiteSpace(x)).Distinct().Take(10));throw new InvalidOperationException(targetFund+"으로 분류된 제출 대상자가 없습니다. 검증 결과의 '근무자별 부담금' A열 분류를 확인해 주세요."+(found.Length>0?"\r\n현재 확인된 분류: "+found:""));}
+                targets=targets.OrderBy(x=>x.ShortTerm?1:0).ThenBy(x=>x.Name,StringComparer.Create(CultureInfo.GetCultureInfo("ko-KR"),false)).ThenBy(x=>x.Birth).ToList();
                 if(teacher)return CreateTeacherWithExcel(targets,year,month,submissionInfo,outputFolder);
                 return CreateWorkerWithExcel(targets,year,month,submissionInfo,outputFolder);
             }
@@ -2740,7 +2716,27 @@ End Sub
 
         static Dictionary<string,UiSubmissionIdentity> ReadUiSubmissionIdentities(ExcelPackage source)
         {
-            var result=new Dictionary<string,UiSubmissionIdentity>();ExcelWorksheet ws=source.Workbook.Worksheets["UI개인별데이터"];if(ws==null||ws.Dimension==null)return result;for(int r=2;r<=ws.Dimension.End.Row;r++){string name=CellText(source,ws,r,3),birth=NormalizeBirth(CellText(source,ws,r,4));if(String.IsNullOrWhiteSpace(name))continue;result[CellText(source,ws,r,1)+"|"+PersonKey(name,birth)+"|"+CellText(source,ws,r,2)+"|"+CellText(source,ws,r,34)]=new UiSubmissionIdentity{Site=CellText(source,ws,r,1),Fund=CellText(source,ws,r,2),Name=name,Birth=birth,Job=CellText(source,ws,r,5),Reason=CellText(source,ws,r,21),HealthEmployer=CellNumber(source,ws,r,23),LongTermEmployer=CellNumber(source,ws,r,25),PensionEmployer=CellNumber(source,ws,r,27),EmploymentEmployer=CellNumber(source,ws,r,29),IndustrialEmployer=CellNumber(source,ws,r,31),ShortTerm=ToInt(ws.Cells[r,34].Value,0)>0,HasSummaryBreakdown=ToInt(ws.Cells[r,35].Value,0)>0,HealthSettlementHealth=CellNumber(source,ws,r,36),LongTermSettlement=CellNumber(source,ws,r,37),PensionSettlement=CellNumber(source,ws,r,38),EmploymentSettlement=CellNumber(source,ws,r,39),IndustrialSettlement=CellNumber(source,ws,r,40)};}return result;
+            var result=new Dictionary<string,UiSubmissionIdentity>();ExcelWorksheet ws=source.Workbook.Worksheets["UI개인별데이터"];if(ws==null||ws.Dimension==null)return result;for(int r=2;r<=ws.Dimension.End.Row;r++){string name=CellText(source,ws,r,3),birth=NormalizeBirth(CellText(source,ws,r,4));if(String.IsNullOrWhiteSpace(name))continue;result[CellText(source,ws,r,1)+"|"+PersonKey(name,birth)+"|"+CellText(source,ws,r,2)+"|"+CellText(source,ws,r,34)]=new UiSubmissionIdentity{Site=CellText(source,ws,r,1),Fund=CellText(source,ws,r,2),Name=name,Birth=birth,Job=CellText(source,ws,r,5),Reason=ReadEmploymentReason(source,ws,r),HealthEmployer=CellNumber(source,ws,r,23),LongTermEmployer=CellNumber(source,ws,r,25),PensionEmployer=CellNumber(source,ws,r,27),EmploymentEmployer=CellNumber(source,ws,r,29),IndustrialEmployer=CellNumber(source,ws,r,31),ShortTerm=ToInt(ws.Cells[r,34].Value,0)>0,HasSummaryBreakdown=ToInt(ws.Cells[r,35].Value,0)>0,HealthSettlementHealth=CellNumber(source,ws,r,36),LongTermSettlement=CellNumber(source,ws,r,37),PensionSettlement=CellNumber(source,ws,r,38),EmploymentSettlement=CellNumber(source,ws,r,39),IndustrialSettlement=CellNumber(source,ws,r,40)};}return result;
+        }
+
+        static string ReadEmploymentReason(ExcelPackage source,ExcelWorksheet ui,int row)
+        {
+            // ReviewReason (column 21) is a reconciliation message, not a replacement reason.
+            // New results retain the original reason alongside the complete site/person identity.
+            if(NormalizeHeader(ui.Cells[1,41].Text)=="기간제근무사유원근로자현황")
+                return CellText(source,ui,row,41);
+            // Previous 2.0.3 results already store the original text in worker column 37.
+            // That sheet lacks a site key: never choose an arbitrary conflicting match.
+            ExcelWorksheet workers=source.Workbook.Worksheets["근무자별 부담금"];
+            if(workers==null||workers.Dimension==null)return "";
+            string name=CellText(source,ui,row,3),birth=NormalizeBirth(CellText(source,ui,row,4));
+            bool shortTerm=ToInt(ui.Cells[row,34].Value,0)>0;
+            var matches=Enumerable.Range(2,Math.Max(0,workers.Dimension.End.Row-1)).Where(r=>
+                CellText(source,workers,r,2)==name &&
+                NormalizeBirth(CellText(source,workers,r,3))==birth &&
+                Regex.IsMatch(NormalizeHeader(CellText(source,workers,r,1))+NormalizeHeader(CellText(source,workers,r,5)),"일용|단기|대체",RegexOptions.IgnoreCase)==shortTerm).ToList();
+            var reasons=matches.Select(r=>CellText(source,workers,r,37)).Distinct(StringComparer.Ordinal).ToList();
+            return reasons.Count==1?reasons[0]:"";
         }
 
         static Dictionary<string,string> ReadReviewFundOverrides(ExcelPackage source)
@@ -2851,18 +2847,8 @@ End Sub
                     bool shortTerm=IsFixedTermWorker(x);
                     ws.Cells[r,1].Value2=i+1;ws.Cells[r,2].Value2=info.RecipientCode??"";ws.Cells[r,3].Value2=info.InstitutionName??"";ws.Cells[r,4].Value2=info.ManagerName??"";
                     ws.Cells[r,5].Value2=x.Job;ws.Cells[r,6].Value2=x.Name;ws.Cells[r,7].Value2=shortTerm?"기간제":"무기";if(shortTerm)ws.Cells[r,8].Value2=x.Reason??"";ws.Cells[r,9].Value2="N";
-                    ws.Cells[r,10].Value2=x.HealthBase;
-                    ws.Cells[r,11].Value2=x.PensionBase;
-                    ws.Cells[r,12].Value2=x.EmploymentBase!=0?x.EmploymentBase:x.IndustrialBase;
-                    ws.Cells[r,29].Value2=industrialRate;
-                    {
-                        // Preserve the template's base-wage formulas. Only settlements are inputs.
-                        ws.Cells[r,15].Value2=x.HealthSettlementHealth;
-                        ws.Cells[r,19].Value2=x.LongTermSettlement;
-                        ws.Cells[r,23].Value2=x.PensionSettlement;
-                        ws.Cells[r,27].Value2=x.EmploymentSettlement;
-                        ws.Cells[r,31].Value2=x.IndustrialSettlement;
-                    }
+                    foreach(var cell in WorkerInsuranceInputs(x,industrialRate))
+                        ws.Cells[r,cell.Key].Value2=cell.Value;
                 }
                 excel.CalculateFullRebuild();excel.CutCopyMode=false;book.SaveAs(outputPath,51);return outputPath;
             }
@@ -2963,24 +2949,23 @@ End Sub
             {
                 SubmitPerson x=people[i];int r=7+i;decimal health,longTerm;GetHealthParts(x,out health,out longTerm);
                 bool shortTerm=IsFixedTermWorker(x);ws.Cells[r,1].Value=i+1;ws.Cells[r,2].Value=info.RecipientCode??"";ws.Cells[r,3].Value=info.InstitutionName??"";ws.Cells[r,4].Value=info.ManagerName??"";ws.Cells[r,5].Value=x.Job;ws.Cells[r,6].Value=x.Name;ws.Cells[r,7].Value=shortTerm?"기간제":"무기";ws.Cells[r,8].Value=shortTerm?(object)x.Reason:null;ws.Cells[r,9].Value="N";
-                if(shortTerm)
-                {
-                    // 대체근로자는 월보수액과 당월 보험료를 건드리지 않고 보험별 정산보험료 칸에만 실제 금액을 기록한다.
-                    ws.Cells[r,15].Value=health;
-                    ws.Cells[r,19].Value=longTerm;
-                    ws.Cells[r,23].Value=x.Pension;
-                    ws.Cells[r,27].Value=x.Employment;
-                    ws.Cells[r,31].Value=x.Industrial;
-                }
-                else
-                {
-                    // 일반 교육공무직은 월보수액만 채우고 보험료 계산은 잠금된 기본 서식의 수식에 맡긴다.
-                    ws.Cells[r,10].Value=x.HealthBase;
-                    ws.Cells[r,11].Value=x.PensionBase;
-                    ws.Cells[r,12].Value=x.EmploymentBase!=0?x.EmploymentBase:x.IndustrialBase;
-                    ws.Cells[r,29].Value=industrialRate;
-                }
+                foreach(var cell in WorkerInsuranceInputs(x,industrialRate))
+                    ws.Cells[r,cell.Key].Value=cell.Value;
             }
+        }
+
+        // ShortTerm is the under-one-month marker; a general fixed-term job is not enough.
+        // Summary amounts already include settlements. Put them in adjustment inputs once,
+        // leaving the template's current-premium and total formulas intact.
+        static Dictionary<int,decimal> WorkerInsuranceInputs(SubmitPerson x,decimal industrialRate)
+        {
+            decimal health,longTerm;GetHealthParts(x,out health,out longTerm);
+            if(x.ShortTerm)return new Dictionary<int,decimal>{
+                {10,0},{11,0},{12,0},{29,industrialRate},
+                {15,health},{19,longTerm},{23,x.Pension},{27,x.Employment},{31,x.Industrial}};
+            return new Dictionary<int,decimal>{
+                {10,x.HealthBase},{11,x.PensionBase},{12,x.EmploymentBase!=0?x.EmploymentBase:x.IndustrialBase},{29,industrialRate},
+                {15,x.HealthSettlementHealth},{19,x.LongTermSettlement},{23,x.PensionSettlement},{27,x.EmploymentSettlement},{31,x.IndustrialSettlement}};
         }
 
         static void PrepareWorkerTemplateValidation(ExcelWorksheet ws)

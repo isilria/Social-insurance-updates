@@ -59,9 +59,9 @@ namespace InsurancePayrollValidator
 
         void Initialize202()
         {
-            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.3";sidebarVersionLabel.Text="Ver. 2.0.3";
+            Text="사회보험 재원별 대사 보조 도우미 Ver. 2.0.4";sidebarVersionLabel.Text="Ver. 2.0.4";
             foreach(Control c in Descendants202(pages["설정"])){
-                Label l=c as Label;if(l!=null&&l.Text.Contains("현재 버전"))l.Text="현재 버전  Ver. 2.0.3";
+                Label l=c as Label;if(l!=null&&l.Text.Contains("현재 버전"))l.Text="현재 버전  Ver. 2.0.4";
                 // Official release keeps the user's existing update preference.
             }
             var button=OutputButton("인식 내역","search",854,9,180,34,UiBlue,false);button.Tag="ThemeAccentAction";button.Click+=(s,e)=>Safe202(ShowRecognition202);pages["파일 등록"].Controls.Add(button);
@@ -73,9 +73,9 @@ namespace InsurancePayrollValidator
         void BuildTools202(Control page)
         {
             page.Controls.Add(TitleLabel("작업 관리",8,10,20F));
-            page.Controls.Add(new Label{Text="Ver. 2.0.3 · 저장한 결과를 다시 열고, 인식 내역과 처리 이력을 확인합니다.",Location=new Point(10,52),AutoSize=true,ForeColor=UiMuted});
+            page.Controls.Add(new Label{Text="Ver. 2.0.4 · 저장한 결과를 다시 열고, 인식 내역과 처리 이력을 확인합니다.",Location=new Point(10,52),AutoSize=true,ForeColor=UiMuted});
             string[] labels={"인식 내역 / 미인식 파일","현재 작업 저장","저장한 작업 열기","최근 작업","확인완료 이력 / 되돌리기","재원 분류 규칙","지난 자료와 금액 비교"};
-            string[] notes={"파일별 종류·사업장·인원, ZIP 내부 파일 및 오류 확인","보정·감면·확인 이력을 포함한 XLSM 저장","저장된 XLSM의 사본을 열어 이어서 작업","최근 저장·불러오기 목록에서 선택","확인 사유·처리일을 조회하고 미확인으로 복원","사업장별 성명·직종 규칙을 저장하고 적용 전 확인","다른 월의 저장 결과와 보험별 기관부담 증감 비교"};
+            string[] notes={"파일별 종류·사업장·인원, ZIP 내부 파일 및 오류 확인","총괄·메뉴별 탭과 보정·감면·메모를 엑셀로 저장","보관 엑셀 또는 기존 XLSM의 사본을 열어 이어서 작업","최근 저장·불러오기 목록에서 선택","확인 사유·처리일을 조회하고 미확인으로 복원","사업장별 성명·직종 규칙을 저장하고 적용 전 확인","다른 월의 저장 결과와 보험별 기관부담 증감 비교"};
             Action[] actions={ShowRecognition202,SaveWorkspace202,OpenWorkspace202,ShowRecent202,ShowAudit202,EditRules202,Compare202};
             for(int i=0;i<labels.Length;i++){int index=i;int y=91+i*65;var card=Card(8,y,1030,57,UiTheme.Card);var b=OutputButton(labels[i],"file",14,9,250,38,UiBlue,false);b.Tag="ThemeAccentAction";b.Click+=(s,e)=>Safe202(actions[index]);card.Controls.Add(b);card.Controls.Add(new Label{Text=notes[i],Location=new Point(288,21),AutoSize=true,ForeColor=UiMuted});page.Controls.Add(card);}
             toolsStatus202=new Label{Text="기관정보·계좌번호·산재요율은 제출서 생성 화면에서 입력하면 다음 실행에도 유지됩니다.",Location=new Point(12,558),Size=new Size(1000,48),ForeColor=UiMuted};page.Controls.Add(toolsStatus202);
@@ -118,12 +118,20 @@ namespace InsurancePayrollValidator
         }
         void SaveWorkspace202()
         {
-            RequireResult202();if(discountDrafts.Count>0)PersistDiscountChangesCore(validationResult.Text);PersistReviewChangesCore(validationResult.Text);
-            using(var d=new SaveFileDialog{Filter="대사 작업 (*.xlsm)|*.xlsm",FileName="사회보험_대사_"+individualDashboard.Year+"년_"+individualDashboard.Month+"월_"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".xlsm",OverwritePrompt=true})if(d.ShowDialog(this)==DialogResult.OK){if(!String.Equals(Path.GetFullPath(validationResult.Text),Path.GetFullPath(d.FileName),StringComparison.OrdinalIgnoreCase))File.Copy(validationResult.Text,d.FileName,true);Remember202(d.FileName);lastSavedHash202=Hash202(validationResult.Text);if(toolsStatus202!=null)toolsStatus202.Text="저장 완료: "+d.FileName;}
+            RequireResult202();
+            using(var d=new SaveFileDialog{Filter="엑셀 작업 보관 (*.xlsx)|*.xlsx|기존 대사 결과 (*.xlsm)|*.xlsm",FileName="사회보험_대사작업_"+individualDashboard.Year+"년_"+individualDashboard.Month+"월.xlsx",OverwritePrompt=true})
+            if(d.ShowDialog(this)==DialogResult.OK){
+                if(discountDrafts.Count>0)PersistDiscountChangesCore(validationResult.Text);
+                PersistReviewChangesCore(validationResult.Text);
+                if(Path.GetExtension(d.FileName).Equals(".xlsx",StringComparison.OrdinalIgnoreCase))ExportWorkspace204(d.FileName);
+                else if(!String.Equals(Path.GetFullPath(validationResult.Text),Path.GetFullPath(d.FileName),StringComparison.OrdinalIgnoreCase))File.Copy(validationResult.Text,d.FileName,true);
+                Remember202(d.FileName);lastSavedHash202=Hash202(validationResult.Text);if(toolsStatus202!=null)toolsStatus202.Text="엑셀 작업 저장 완료: "+d.FileName;
+            }
         }
         void OpenWorkspace202(){using(var d=new OpenFileDialog{Filter="저장한 대사 결과 (*.xlsm;*.xlsx)|*.xlsm;*.xlsx"})if(d.ShowDialog(this)==DialogResult.OK)OpenWorkspacePath202(d.FileName);}
         void OpenWorkspacePath202(string path)
         {
+            if(WorkspaceWorkbook204.IsArchive(path)){OpenWorkbook204(path);return;}
             using(var p=new ExcelPackage(new FileInfo(path)))if(p.Workbook.Worksheets["UI개인별데이터"]==null)throw new InvalidDataException("2.0 계열에서 저장한 대사 결과 파일을 선택해 주세요.");
             string target=NewTemporaryResultPath();File.Copy(path,target);temporaryResultPath=target;lastSavedHash202=Hash202(target);validationResult.Text=target;externalResult202=false;reviewNotes202.Clear();reviewFundDrafts.Clear();discountDrafts.Clear();LoadResultIntoUi(target);Remember202(path);ShowPage("총괄표");
         }
